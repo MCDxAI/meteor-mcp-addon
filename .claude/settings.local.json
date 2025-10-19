@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Cope/Documents/GitHub/gemini-discord-bot/**)",
+      "WebSearch",
+      "mcp__cloudscraper-mcp__scrape_url"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
