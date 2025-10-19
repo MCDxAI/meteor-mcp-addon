@@ -1,5 +1,6 @@
 package com.cope.meteormcp.gui.screens;
 
+import com.cope.meteormcp.systems.GeminiConfig;
 import com.cope.meteormcp.systems.MCPServerConfig;
 import com.cope.meteormcp.systems.MCPServerConnection;
 import com.cope.meteormcp.systems.MCPServers;
@@ -30,6 +31,29 @@ public class MCPServersScreen extends WindowTabScreen {
         // Add server button
         WButton addButton = add(theme.button("Add Server")).expandX().widget();
         addButton.action = () -> mc.setScreen(new AddMCPServerScreen(theme, this));
+
+        add(theme.horizontalSeparator()).expandX();
+
+        // Gemini Settings Section
+        add(theme.label("Gemini API Settings")).expandX();
+
+        WHorizontalList geminiRow = add(theme.horizontalList()).expandX().widget();
+
+        WButton geminiSettingsBtn = geminiRow.add(theme.button("Configure Gemini API")).expandX().widget();
+        geminiSettingsBtn.action = () -> mc.setScreen(new GeminiSettingsScreen(theme, this));
+
+        GeminiConfig geminiConfig = MCPServers.get().getGeminiConfig();
+        boolean hasGeminiCredentials = geminiConfig != null && geminiConfig.hasCredentials();
+        boolean geminiEnabled = geminiConfig != null && geminiConfig.isEnabled();
+        String geminiStatus;
+        if (!hasGeminiCredentials) {
+            geminiStatus = "Not Configured";
+        } else if (geminiEnabled) {
+            geminiStatus = "Enabled";
+        } else {
+            geminiStatus = "Configured (Disabled)";
+        }
+        geminiRow.add(theme.label(geminiStatus));
 
         add(theme.horizontalSeparator()).expandX();
 

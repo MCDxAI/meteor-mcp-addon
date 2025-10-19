@@ -10,6 +10,7 @@ to external data and automation.
 - Auto-connect servers on startup and persist settings via Meteor's system storage
 - Browse tools, copy StarScript snippets, and execute them in real time
 - Register each tool globally as `{serverName.toolName(arg1, arg2)}` in StarScript
+- Gemini API integration for both direct prompts and automatic MCP tool calling
 - Clean shutdown and reconnect logic that keeps StarScript bindings in sync
 - Includes the official MCP Java SDK and required runtime dependencies for zero-fuss installs
 
@@ -38,6 +39,15 @@ to external data and automation.
 Servers can be edited, removed, or reconnected at any time. Removing or disconnecting a server
 automatically unregisters its StarScript functions to avoid stale entries.
 
+## Configuring Gemini
+1. Open Meteor (default key: `Right Shift`) and select the **MCP** tab.
+2. Click **Configure Gemini API**.
+3. Enter your Gemini API key, choose a model, adjust token/temperature limits if needed, and enable the toggle.
+4. Use **Test Connection** to verify the credentials, then **Save** to persist the configuration.
+
+The Gemini client is cached and automatically refreshed when you update settings. Disabling the toggle keeps
+your settings on disk without attempting any Gemini calls.
+
 ## Using StarScript
 After connecting a server, the addon registers each tool under the server's name. Example:
 
@@ -48,6 +58,16 @@ After connecting a server, the addon registers each tool under the server's name
 Place the expression anywhere StarScript is supported—HUD text elements, chat commands, macros,
 Discord presence, modules, etc. Arguments are automatically converted to the JSON payload expected
 by the tool schema, and results are converted back to StarScript-friendly values.
+
+With Gemini enabled you also gain two helper functions:
+
+```text
+{gemini("Summarize the latest chat message")}
+{gemini_mcp("Fetch the current weather using any connected servers and summarize it")}
+```
+
+`gemini` performs a simple LLM call. `gemini_mcp` lets Gemini inspect every connected MCP server and
+autonomously invoke tools as part of its reasoning loop.
 
 ## Development
 

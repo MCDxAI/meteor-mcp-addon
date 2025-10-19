@@ -35,3 +35,6 @@ Thumbs.db
 # Fabric / Loom runtime dirs
 loom-cache/
 run/
+
+# Reference repos
+ai_reference/*

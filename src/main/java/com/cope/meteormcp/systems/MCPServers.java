@@ -1,6 +1,7 @@
 package com.cope.meteormcp.systems;
 
 import com.cope.meteormcp.MeteorMCPAddon;
+import com.cope.meteormcp.gemini.GeminiClientManager;
 import meteordevelopment.meteorclient.systems.System;
 import meteordevelopment.meteorclient.systems.Systems;
 import net.minecraft.nbt.NbtCompound;
@@ -20,6 +21,7 @@ import java.util.function.BiConsumer;
 public class MCPServers extends System<MCPServers> {
     private final Map<String, MCPServerConnection> connections = new ConcurrentHashMap<>();
     private final Map<String, MCPServerConfig> configs = new ConcurrentHashMap<>();
+    private GeminiConfig geminiConfig = new GeminiConfig();
 
     /**
      * Creates the system container used by Meteor's global registry. The system name
@@ -200,6 +202,28 @@ public class MCPServers extends System<MCPServers> {
     }
 
     /**
+     * @return current Gemini configuration snapshot
+     */
+    public GeminiConfig getGeminiConfig() {
+        return geminiConfig;
+    }
+
+    /**
+     * Replace the stored Gemini configuration and invalidate any cached client.
+     *
+     * @param config new configuration instance (falls back to defaults when {@code null})
+     */
+    public void setGeminiConfig(GeminiConfig config) {
+        GeminiConfig next = config != null ? config : new GeminiConfig();
+        if (!Objects.equals(this.geminiConfig, next)) {
+            this.geminiConfig = next;
+            GeminiClientManager.getInstance().invalidateClient();
+        } else {
+            this.geminiConfig = next;
+        }
+    }
+
+    /**
      * @return snapshot of all active connections
      */
     public Collection<MCPServerConnection> getAllConnections() {
@@ -253,6 +277,7 @@ public class MCPServers extends System<MCPServers> {
             serversList.add(config.toTag());
         }
         tag.put("servers", serversList);
+        tag.put("gemini", geminiConfig.toTag());
 
         return tag;
     }
@@ -275,6 +300,19 @@ public class MCPServers extends System<MCPServers> {
             }
 
             MeteorMCPAddon.LOG.info("Loaded {} MCP server configurations", configs.size());
+        }
+
+        if (tag.contains("gemini")) {
+            tag.getCompound("gemini").ifPresent(geminiTag -> {
+                try {
+                    this.geminiConfig = GeminiConfig.fromTag(geminiTag);
+                } catch (Exception e) {
+                    MeteorMCPAddon.LOG.error("Failed to load Gemini configuration: {}", e.getMessage());
+                    this.geminiConfig = new GeminiConfig();
+                }
+            });
+        } else {
+            this.geminiConfig = new GeminiConfig();
         }
 
         return this;

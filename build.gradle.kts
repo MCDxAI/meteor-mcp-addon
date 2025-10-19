@@ -44,6 +44,19 @@ dependencies {
     modImplementation("org.reactivestreams:reactive-streams:1.0.4")!!.let { include(it) }
     modImplementation("io.projectreactor:reactor-core:3.6.5")!!.let { include(it) }
     modImplementation("com.networknt:json-schema-validator:1.5.7")!!.let { include(it) }
+
+    val geminiVersion = properties["gemini_version"] as String
+    modImplementation("com.google.genai:google-genai:${geminiVersion}")!!.let { include(it) }
+    modImplementation("com.squareup.okhttp3:okhttp:4.12.0")!!.let { include(it) }
+    modImplementation("com.squareup.okio:okio-jvm:3.6.0")!!.let { include(it) }
+    modImplementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.10")!!.let { include(it) }
+    modImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.10")!!.let { include(it) }
+    modImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.10")!!.let { include(it) }
+    modImplementation("com.fasterxml.jackson.core:jackson-annotations:2.18.3")!!.let { include(it) }
+    modImplementation("com.fasterxml.jackson.core:jackson-core:2.18.3")!!.let { include(it) }
+    modImplementation("com.fasterxml.jackson.core:jackson-databind:2.18.3")!!.let { include(it) }
+    modImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.18.3")!!.let { include(it) }
+    modImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.3")!!.let { include(it) }
 }
 
 tasks {

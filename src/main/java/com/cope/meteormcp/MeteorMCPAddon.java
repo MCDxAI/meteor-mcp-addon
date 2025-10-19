@@ -1,6 +1,7 @@
 package com.cope.meteormcp;
 
 import com.cope.meteormcp.gui.tabs.MCPTab;
+import com.cope.meteormcp.starscript.GeminiStarScriptIntegration;
 import com.cope.meteormcp.starscript.MCPToolExecutor;
 import com.cope.meteormcp.systems.MCPServerConnection;
 import com.cope.meteormcp.systems.MCPServers;
@@ -42,6 +43,10 @@ public class MeteorMCPAddon extends MeteorAddon {
 
         // Connect to auto-connect servers
         MCPServers.get().connectAutoConnect();
+
+        // Register Gemini helpers in StarScript
+        GeminiStarScriptIntegration.register();
+        LOG.info("Gemini StarScript functions registered");
 
         LOG.info("Meteor MCP Addon initialized successfully");
     }

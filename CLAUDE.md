@@ -11,7 +11,7 @@ This is a **Meteor Client addon** that bridges the **Model Context Protocol (MCP
 
 ### Current Status
 - ✅ **Phase 1 Complete**: MCP server management, StarScript tool registration, GUI for configuration
-- 🚧 **Phase 2 (Future)**: Gemini AI integration to use MCP tools intelligently
+- ✅ **Phase 2 Complete**: Gemini AI integration to use MCP tools intelligently
 
 ## Technology Stack
 
@@ -32,10 +32,11 @@ This is a **Meteor Client addon** that bridges the **Model Context Protocol (MCP
 - **StarScript 0.2.3** (`org.meteordev:starscript`): Expression language for dynamic text/macros
 - **Meteor Systems**: Persistent NBT-based configuration storage
 
-### Future: Gemini AI Integration
-- **Google GenAI Java SDK** (`com.google.genai:google-genai:1.23.0`) - Official Gemini API SDK
-- **Function Calling**: Convert MCP tools to Gemini `FunctionDeclaration` or Java `Method` reflection
-- **Integration Pattern**: Gemini → Tool Selection → MCP Server Execution → StarScript Display
+### Gemini AI Integration
+- **Google GenAI Java SDK** (`com.google.genai:google-genai:1.23.0`) bundled and shaded into the addon.
+- **Client Management**: `GeminiClientManager` handles API key caching, client lifecycle, and test connections.
+- **Execution Flow**: `GeminiExecutor` supports simple prompts and multi-turn MCP-enhanced loops via manual function calling.
+- **StarScript Helpers**: `GeminiStarScriptIntegration` exposes `{gemini()}` and `{gemini_mcp()}` for in-game usage.
 
 ## Development Commands
 
@@ -191,81 +192,44 @@ This works in:
 - Discord Rich Presence
 - Custom Meteor modules
 
-## Future: Gemini AI Integration
+## Gemini AI Integration Details
 
-### Planned Architecture
+### Execution Flow
 ```
-User Input (in Minecraft chat/HUD)
+StarScript call ({gemini()} or {gemini_mcp()})
     ↓
-Gemini Client (com.google.genai)
+GeminiStarScriptIntegration (argument extraction, server discovery)
     ↓
-GenerateContentConfig with MCP Tools (as FunctionDeclarations)
+GeminiExecutor (simple prompt or MCP-enhanced loop)
     ↓
-Gemini selects tool to call
+GeminiClientManager (cached Client, request config)
     ↓
-GeminiMCPBridge routes to MCPServerConnection.callTool()
+Gemini SDK generateContent()
     ↓
-Result fed back to Gemini
+MCPToGeminiBridge converts tool schemas + routes function calls
     ↓
-Final response displayed in Minecraft
-```
-
-### Implementation Strategy
-
-#### Option 1: Automatic Function Calling (AFC)
-- Create wrapper methods for each MCP tool
-- Use Java reflection to expose methods to Gemini
-- Gemini SDK automatically executes functions (up to 10 chained calls)
-- Simple but less control over execution flow
-
-```java
-// Pseudocode
-public static String mcpToolWrapper(String arg1, String arg2) {
-    return MCPServers.get().getConnection("server").callTool("tool", args);
-}
-
-Method method = Class.getMethod("mcpToolWrapper", String.class, String.class);
-GenerateContentConfig config = GenerateContentConfig.builder()
-    .tools(Tool.builder().functions(method))
-    .build();
+MCPServerConnection.callTool()
+    ↓
+CallToolResult mapped back to Gemini → final response surfaced via StarScript
 ```
 
-#### Option 2: Manual Function Calling
-- Convert MCP tool schemas to `FunctionDeclaration` objects
-- Parse Gemini's function call requests from response
-- Manually route to `MCPServerConnection.callTool()`
-- Feed results back for next Gemini turn
-- More control, better for complex multi-step workflows
+### Key Components
+1. **GeminiClientManager** – lazy client creation, invalidation on config changes, connection testing helper.
+2. **GeminiExecutor** – synchronous prompt handling plus manual function-calling loop for MCP tools.
+3. **MCPToGeminiBridge** – JSON Schema conversion and server/tool routing metadata.
+4. **GeminiStarScriptIntegration** – exposes `{gemini()}` and `{gemini_mcp()}` functions to the global StarScript instance.
+5. **GeminiSettingsScreen** – GUI for API key, model selection, token/temperature limits, and enable toggle.
 
-```java
-// Pseudocode
-FunctionDeclaration fd = FunctionDeclaration.newBuilder()
-    .setName(tool.name())
-    .setDescription(tool.description())
-    .setParameters(convertMcpSchemaToGeminiSchema(tool.inputSchema()))
-    .build();
+### Configuration & Dependencies
+- `build.gradle.kts` shades `com.google.genai:google-genai:1.23.0` into the released jar.
+- `MCPServers` stores `GeminiConfig` alongside server configs; persisted via NBT.
+- Settings screen masks API key input, supports live "Test Connection" using GeminiExecutor.
 
-Tool geminiTool = Tool.newBuilder().addFunctionDeclarations(fd).build();
-// ... parse response for function calls, execute via MCP, iterate
-```
-
-### Key Integration Points
-1. **Schema Conversion**: MCP `JsonSchema` → Gemini `Schema` (OpenAPI 3.0 format)
-2. **Result Mapping**: `CallToolResult` → Gemini-compatible response format
-3. **Conversation Context**: Maintain chat history for multi-turn interactions
-4. **StarScript Display**: Final Gemini response rendered via StarScript in HUD/chat
-
-### Dependencies to Add
-```kotlin
-// In build.gradle.kts
-implementation("com.google.genai:google-genai:1.23.0")!!.let { include(it) }
-```
-
-### Environment Setup
-```bash
-# Gemini API key (for development)
-export GOOGLE_API_KEY='your-api-key'
-```
+### Behaviour Highlights
+- Manual function calling provides complete control over tool execution order and error handling.
+- Gemini automatically sees every connected MCP server when `{gemini_mcp()}` is used.
+- Tool results are normalized to simple JSON payloads before being fed back into Gemini.
+- All responses (success or failure) return string values so they can render safely in StarScript contexts.
 
 ## Reference Documentation
 
@@ -276,6 +240,62 @@ Comprehensive Gemini API and Genkit documentation copied from `gemini-discord-bo
 - **MCP + Genkit**: `ai_docs/genkit-ai-mcp.md` (TypeScript reference for MCP integration patterns)
 
 **Important**: The Genkit docs are for **reference only** to understand MCP integration patterns. We use **Google GenAI Java SDK** directly, not Genkit.
+
+### Local Reference Repositories (`ai_reference/`)
+
+**IMPORTANT**: The `ai_reference/` directory is **git-ignored** but contains complete clones of key Meteor Client repositories for development reference. Claude Code has full read access to these files.
+
+**Location**: `C:\Users\Cope\Documents\GitHub\meteor-mcp-addon\ai_reference/`
+
+#### How to Access ai_reference Files
+
+Claude Code can read these files using standard tools:
+
+1. **List directory structure**:
+   ```bash
+   ls -la ai_reference/
+   find ai_reference -maxdepth 3 -type d
+   ```
+
+2. **Find specific files**:
+   ```bash
+   find ai_reference/meteor-client/src -name "Module.java" -type f
+   find ai_reference/MeteorPlus/src -name "*Gemini*" -type f
+   ```
+
+3. **Read files directly**:
+   ```
+   Read tool: C:\Users\Cope\Documents\GitHub\meteor-mcp-addon\ai_reference\meteor-client\src\main\java\meteordevelopment\meteorclient\systems\modules\Module.java
+   ```
+
+4. **Search for code patterns**:
+   ```bash
+   grep -r "EventHandler" ai_reference/meteor-rejects/src/main/java/
+   grep -r "StarScript" ai_reference/MeteorPlus/src/main/java/
+   ```
+
+#### Available Reference Repositories
+
+The `ai_reference/` directory contains git clones of:
+
+| Repository | Path | Purpose |
+|------------|------|---------|
+| **meteor-client** | `ai_reference/meteor-client/` | Core framework, base classes, event system |
+| **starscript** | `ai_reference/starscript/` | Expression language implementation |
+| **orbit** | `ai_reference/orbit/` | Event system library |
+| **meteor-rejects** | `ai_reference/meteor-rejects/` | Feature-rich addon examples |
+| **meteor-villager-roller** | `ai_reference/meteor-villager-roller/` | Minimal addon template |
+| **MeteorPlus** | `ai_reference/MeteorPlus/` | Advanced addon with mode systems |
+
+**Index File**: `ai_reference/INDEX.md` contains a comprehensive catalog of all repositories, their structure, key files, and usage patterns.
+
+#### Best Practices for Using ai_reference
+
+1. **Read INDEX.md first**: Always start with `ai_reference/INDEX.md` to understand what's available
+2. **Use absolute paths**: When reading files, use full Windows paths: `C:\Users\Cope\Documents\GitHub\meteor-mcp-addon\ai_reference\...`
+3. **Find before reading**: Use `find` or `grep` to locate relevant files before reading them
+4. **Reference specific examples**: The INDEX.md file lists exact file paths for common development tasks
+5. **Git operations**: The `.git` directories are present but should generally be ignored
 
 ### External Resources
 - **Meteor Client**: https://github.com/MeteorDevelopment/meteor-client

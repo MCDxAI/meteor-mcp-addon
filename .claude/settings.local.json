@@ -3,7 +3,19 @@
     "allow": [
       "Read(//c/Users/Cope/Documents/GitHub/gemini-discord-bot/**)",
       "WebSearch",
-      "mcp__cloudscraper-mcp__scrape_url"
+      "mcp__cloudscraper-mcp__scrape_url",
+      "mcp__context7__resolve-library-id",
+      "Bash(mkdir -p ai_reference)",
+      "Bash(git clone https://github.com/MeteorDevelopment/meteor-client)",
+      "Bash(git clone https://github.com/MeteorDevelopment/starscript)",
+      "Bash(git clone https://github.com/MeteorDevelopment/orbit)",
+      "Bash(git clone https://github.com/AntiCope/meteor-rejects)",
+      "Bash(git clone https://github.com/maxsupermanhd/meteor-villager-roller)",
+      "Bash(git clone https://github.com/MeteorClientPlus/MeteorPlus)",
+      "Read(//c/Users/Cope/Documents/GitHub/**)",
+      "Bash(tree -d -L 3 \"/c/Users/Cope/Documents/GitHub/meteor-mcp-addon/ai_reference/MeteorPlus/src/main/java/nekiplay/meteorplus\")",
+      "Bash(tree \"C:\\Users\\Cope\\Documents\\GitHub\\meteor-skyblock-addon\\src\\main\\java\" -L 3)",
+      "Bash(tree ai_reference -L 2 -I '.git')"
     ],
     "deny": [],
     "ask": []
