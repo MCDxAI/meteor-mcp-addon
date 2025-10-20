@@ -6,6 +6,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # <-- Add this line
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
