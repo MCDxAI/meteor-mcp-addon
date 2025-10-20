@@ -77,7 +77,6 @@ Use these expressions in:
 **MCP-enhanced prompts:**
 ```bash
 /gemini-mcp "Read my config.json and explain each setting"
-/gemini-mcp "Check git status and suggest next steps"
 {gemini_mcp("Get the current time in Tokyo")}
 ```
 
