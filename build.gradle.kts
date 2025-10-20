@@ -57,6 +57,10 @@ dependencies {
     modImplementation("com.fasterxml.jackson.core:jackson-databind:2.18.3")!!.let { include(it) }
     modImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.18.3")!!.let { include(it) }
     modImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.3")!!.let { include(it) }
+
+    // Testing
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
 }
 
 tasks {
@@ -93,5 +97,9 @@ tasks {
         options.release = 21
         options.compilerArgs.add("-Xlint:deprecation")
         options.compilerArgs.add("-Xlint:unchecked")
+    }
+
+    test {
+        useJUnitPlatform()
     }
 }

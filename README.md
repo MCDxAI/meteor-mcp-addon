@@ -10,8 +10,9 @@ to external data and automation.
 - Auto-connect servers on startup and persist settings via Meteor's system storage
 - Browse tools, copy StarScript snippets, and execute them in real time
 - Register each tool globally as `{serverName.toolName(arg1, arg2)}` in StarScript
-- Gemini API integration for both direct prompts and automatic MCP tool calling
-- Clean shutdown and reconnect logic that keeps StarScript bindings in sync
+- Dynamic chat commands for every connected MCP tool (`/server:tool …`) with help and tab completion
+- Gemini chat commands: `/gemini` for quick prompts, `/gemini-mcp` for LLM prompts with automatic MCP tool chaining
+- Clean shutdown and reconnect logic that keeps StarScript bindings and commands in sync
 - Includes the official MCP Java SDK and required runtime dependencies for zero-fuss installs
 
 ## Requirements
@@ -68,6 +69,27 @@ With Gemini enabled you also gain two helper functions:
 
 `gemini` performs a simple LLM call. `gemini_mcp` lets Gemini inspect every connected MCP server and
 autonomously invoke tools as part of its reasoning loop.
+
+## Command Interface
+
+### MCP Tool Commands
+- Syntax: `/server_name:tool_name [arguments]`
+- Supports positional arguments (`/weather:get_forecast "London" 3`)
+- Supports named arguments (`/weather:get_forecast location="London" days=3`)
+- Accepts raw JSON payloads (`/database:query {"table":"users","limit":10}`)
+- Built-in help via `/server:tool help`
+- Tab completion suggests parameter names (`days=`, `location=`, …)
+
+Commands register dynamically when a server connects and disappear automatically on disconnect, so the chat list always mirrors your active MCP environment.
+
+### Gemini Commands
+- `/gemini "prompt"` – fire-and-forget Gemini prompt (no MCP tools)
+- `/gemini-mcp "prompt"` – Gemini with full access to every connected MCP tool
+
+Responses from `/gemini-mcp` show which tools were used:  
+`[Tools Used] weather:get_forecast (125ms), calendar:create_event (341ms)`
+
+Gemini commands run asynchronously (they never freeze chat) and include a lightweight cooldown to prevent accidental spam/API overuse. If Gemini isn't configured yet, the commands guide you back to the MCP tab.
 
 ## Development
 

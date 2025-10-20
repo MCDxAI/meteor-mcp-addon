@@ -1,16 +1,24 @@
 package com.cope.meteormcp.systems;
 
 import com.cope.meteormcp.MeteorMCPAddon;
+import com.cope.meteormcp.commands.MCPToolCommand;
 import com.cope.meteormcp.gemini.GeminiClientManager;
+import com.mojang.brigadier.CommandDispatcher;
+import io.modelcontextprotocol.spec.McpSchema.Tool;
+import meteordevelopment.meteorclient.commands.Command;
+import meteordevelopment.meteorclient.commands.Commands;
 import meteordevelopment.meteorclient.systems.System;
 import meteordevelopment.meteorclient.systems.Systems;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.command.CommandSource;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
+
+import static meteordevelopment.meteorclient.MeteorClient.mc;
 
 /**
  * System manager for MCP server connections.
@@ -21,6 +29,7 @@ import java.util.function.BiConsumer;
 public class MCPServers extends System<MCPServers> {
     private final Map<String, MCPServerConnection> connections = new ConcurrentHashMap<>();
     private final Map<String, MCPServerConfig> configs = new ConcurrentHashMap<>();
+    private final Map<String, List<MCPToolCommand>> registeredCommands = new ConcurrentHashMap<>();
     private GeminiConfig geminiConfig = new GeminiConfig();
 
     /**
@@ -143,8 +152,16 @@ public class MCPServers extends System<MCPServers> {
         if (connection.connect()) {
             connections.put(name, connection);
 
-            // Register to StarScript
-            MeteorMCPAddon.registerServerToStarScript(name, connection);
+            Runnable registration = () -> {
+                MeteorMCPAddon.registerServerToStarScript(name, connection);
+                registerCommandsForServer(name, connection);
+            };
+
+            if (mc != null) {
+                mc.execute(registration);
+            } else {
+                registration.run();
+            }
 
             return true;
         }
@@ -163,7 +180,16 @@ public class MCPServers extends System<MCPServers> {
             connection.disconnect();
 
             // Unregister from StarScript
-            MeteorMCPAddon.unregisterServerFromStarScript(name);
+            Runnable cleanup = () -> {
+                MeteorMCPAddon.unregisterServerFromStarScript(name);
+                unregisterCommandsForServer(name);
+            };
+
+            if (mc != null) {
+                mc.execute(cleanup);
+            } else {
+                cleanup.run();
+            }
         }
     }
 
@@ -266,6 +292,62 @@ public class MCPServers extends System<MCPServers> {
      */
     public void disconnectAll() {
         new ArrayList<>(connections.keySet()).forEach(this::disconnect);
+    }
+
+    private void registerCommandsForServer(String serverName, MCPServerConnection connection) {
+        if (connection == null || !connection.isConnected()) {
+            return;
+        }
+
+        unregisterCommandsForServer(serverName);
+
+        List<Tool> tools = connection.getTools();
+        if (tools == null || tools.isEmpty()) {
+            return;
+        }
+
+        List<MCPToolCommand> commandsForServer = new ArrayList<>();
+        for (Tool tool : tools) {
+            try {
+                MCPToolCommand command = new MCPToolCommand(serverName, tool);
+                Commands.add(command);
+                commandsForServer.add(command);
+            } catch (Exception e) {
+                MeteorMCPAddon.LOG.error("Failed to register command for tool {}:{} - {}", serverName, tool.name(), e.getMessage());
+            }
+        }
+
+        if (!commandsForServer.isEmpty()) {
+            registeredCommands.put(serverName, commandsForServer);
+            refreshCommandRegistry();
+            MeteorMCPAddon.LOG.info("Registered {} MCP commands for server '{}'", commandsForServer.size(), serverName);
+        }
+    }
+
+    private void unregisterCommandsForServer(String serverName) {
+        List<MCPToolCommand> commands = registeredCommands.remove(serverName);
+        boolean modified = false;
+
+        if (commands != null && !commands.isEmpty()) {
+            modified |= Commands.COMMANDS.removeAll(commands);
+        }
+
+        modified |= Commands.COMMANDS.removeIf(command -> command.getName().startsWith(serverName + ":"));
+
+        if (modified) {
+            refreshCommandRegistry();
+            MeteorMCPAddon.LOG.info("Unregistered MCP commands for server '{}'", serverName);
+        }
+    }
+
+    private void refreshCommandRegistry() {
+        Commands.COMMANDS.sort(Comparator.comparing(Command::getName));
+
+        CommandDispatcher<CommandSource> dispatcher = new CommandDispatcher<>();
+        for (Command command : Commands.COMMANDS) {
+            command.registerTo(dispatcher);
+        }
+        Commands.DISPATCHER = dispatcher;
     }
 
     @Override

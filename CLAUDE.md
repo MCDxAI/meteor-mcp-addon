@@ -12,6 +12,7 @@ This is a **Meteor Client addon** that bridges the **Model Context Protocol (MCP
 ### Current Status
 - ✅ **Phase 1 Complete**: MCP server management, StarScript tool registration, GUI for configuration
 - ✅ **Phase 2 Complete**: Gemini AI integration to use MCP tools intelligently
+- ✅ **Phase 3 Complete**: Chat command system (`/server:tool`, `/gemini`, `/gemini-mcp`) with dynamic registration and help
 
 ## Technology Stack
 
@@ -85,7 +86,7 @@ External MCP Server Process
 
 #### Core Components
 - **`MeteorMCPAddon.java`**: Entry point, plugin initialization
-  - `onInitialize()`: Registers systems, tabs, connects auto-connect servers
+  - `onInitialize()`: Registers systems, tabs, Gemini commands, connects auto-connect servers
   - `registerServerToStarScript()`: Injects tools into global StarScript namespace
   - `unregisterServerFromStarScript()`: Cleanup on disconnect
 
@@ -110,6 +111,14 @@ External MCP Server Process
   - Execution: `callTool(toolName, arguments)` → `CallToolResult`
   - Lifecycle: `connect()`, `disconnect()`, `reconnect()`
   - Rate limiting: 5-second reconnect cooldown
+
+#### Command Integration (`commands/`)
+- **`CommandUtils.java`**: Shared key=value/JSON parser plus chat output helpers for tool results
+- **`MCPToolCommand.java`**: Dynamic Brigadier command per MCP tool (`/server:tool …`) with help + suggestions
+- **`GeminiCommand.java`**: `/gemini "prompt"` chat command with async execution and per-player cooldown
+- **`GeminiMCPCommand.java`**: `/gemini-mcp "prompt"` with automatic MCP tool discovery and usage reporting
+
+`MCPServers` mirrors StarScript registration by adding/removing `MCPToolCommand` instances whenever servers connect or disconnect, refreshing the Brigadier dispatcher to keep the chat tree accurate.
 
 #### StarScript Integration (`starscript/`)
 - **`MCPToolExecutor.java`**: Bridges StarScript function calls to MCP

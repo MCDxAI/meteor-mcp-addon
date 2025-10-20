@@ -10,6 +10,7 @@ import meteordevelopment.meteorclient.gui.tabs.WindowTabScreen;
 import meteordevelopment.meteorclient.gui.widgets.containers.WHorizontalList;
 import meteordevelopment.meteorclient.gui.widgets.containers.WTable;
 import meteordevelopment.meteorclient.gui.widgets.pressable.WButton;
+import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
 
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 
@@ -84,8 +85,13 @@ public class MCPServersScreen extends WindowTabScreen {
             } else {
                 WButton connectBtn = actions.add(theme.button("Connect")).widget();
                 connectBtn.action = () -> {
-                    mcpServers.connect(config.getName());
-                    reload();
+                    connectBtn.set("Connecting...");
+                    connectBtn.action = null;
+                    MeteorExecutor.execute(() -> {
+                        mcpServers.connect(config.getName());
+                        if (mc != null) mc.execute(this::reload);
+                        else reload();
+                    });
                 };
             }
 

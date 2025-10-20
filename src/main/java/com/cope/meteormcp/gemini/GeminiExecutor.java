@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -30,6 +31,28 @@ import java.util.Set;
  */
 public final class GeminiExecutor {
     private static final int MAX_TOOL_CALL_ITERATIONS = 6;
+
+    public record GeminiMCPResult(String response, List<ToolCallInfo> toolCalls) {
+        public GeminiMCPResult(String response, List<ToolCallInfo> toolCalls) {
+            this.response = response;
+            this.toolCalls = toolCalls == null ? List.of() : List.copyOf(toolCalls);
+        }
+    }
+
+    public record ToolCallInfo(
+        String serverName,
+        String toolName,
+        Map<String, Object> arguments,
+        long durationMs,
+        boolean success,
+        String errorMessage
+    ) {
+        public ToolCallInfo {
+            arguments = arguments == null
+                ? Map.of()
+                : Collections.unmodifiableMap(new LinkedHashMap<>(arguments));
+        }
+    }
 
     private GeminiExecutor() {
     }
@@ -57,23 +80,28 @@ public final class GeminiExecutor {
     }
 
     public static String executeWithMCPTools(String prompt, Set<String> serverNames) {
+        return executeWithMCPToolsDetailed(prompt, serverNames).response();
+    }
+
+    public static GeminiMCPResult executeWithMCPToolsDetailed(String prompt, Set<String> serverNames) {
         if (prompt == null || prompt.isBlank()) {
-            return "Warning: prompt is required.";
+            return new GeminiMCPResult("Warning: prompt is required.", List.of());
         }
 
         GeminiClientManager manager = GeminiClientManager.getInstance();
         if (!manager.isConfigured()) {
-            return "Warning: Gemini is not configured.";
+            return new GeminiMCPResult("Warning: Gemini is not configured.", List.of());
         }
 
         GeminiConfig config = MCPServers.get().getGeminiConfig();
         Map<String, MCPServerConnection> connections = new HashMap<>();
         List<FunctionDeclaration> functionDeclarations = new ArrayList<>();
+        List<ToolCallInfo> toolHistory = new ArrayList<>();
 
         collectTools(serverNames, connections, functionDeclarations);
 
         if (functionDeclarations.isEmpty()) {
-            return executeSimplePrompt(prompt);
+            return new GeminiMCPResult(executeSimplePrompt(prompt), toolHistory);
         }
 
         try {
@@ -99,12 +127,12 @@ public final class GeminiExecutor {
                 );
 
                 if (response == null) {
-                    return "Warning: Gemini returned no response.";
+                    return new GeminiMCPResult("Warning: Gemini returned no response.", toolHistory);
                 }
 
                 List<FunctionCall> functionCalls = response.functionCalls();
                 if (functionCalls == null || functionCalls.isEmpty()) {
-                    return extractResponseText(response);
+                    return new GeminiMCPResult(extractResponseText(response), toolHistory);
                 }
 
                 response.candidates().ifPresent(candidates -> {
@@ -124,33 +152,59 @@ public final class GeminiExecutor {
                     } catch (IllegalArgumentException ex) {
                         MeteorMCPAddon.LOG.warn("Gemini requested unknown function '{}'", callName);
                         history.add(buildFunctionErrorResponse(callName, "Unknown function requested: " + callName));
+                        toolHistory.add(new ToolCallInfo("unknown", callName, Map.of(), 0L, false,
+                            "Unknown function requested: " + callName));
                         continue;
                     }
 
                     MCPServerConnection connection = connections.get(route.serverName());
                     if (connection == null || !connection.isConnected()) {
-                        history.add(buildFunctionErrorResponse(callName,
-                            "Server '" + route.serverName() + "' is not connected."));
+                        String errorMessage = "Server '" + route.serverName() + "' is not connected.";
+                        history.add(buildFunctionErrorResponse(callName, errorMessage));
+                        toolHistory.add(new ToolCallInfo(
+                            route.serverName(),
+                            route.toolName(),
+                            Map.of(),
+                            0L,
+                            false,
+                            errorMessage
+                        ));
                         continue;
                     }
 
                     Map<String, Object> arguments = safeArguments(call.args().orElse(Collections.emptyMap()));
+                    long start = System.currentTimeMillis();
                     Map<String, Object> toolResult = executeMCPTool(connection, route.toolName(), arguments);
+                    long duration = System.currentTimeMillis() - start;
+
                     history.add(Content.builder()
                         .parts(List.of(Part.fromFunctionResponse(callName, toolResult)))
                         .build());
+
+                    boolean success = !Boolean.TRUE.equals(toolResult.get("error"));
+                    String errorMessage = success ? null
+                        : Objects.toString(toolResult.get("message"), "Tool execution failed.");
+
+                    toolHistory.add(new ToolCallInfo(
+                        route.serverName(),
+                        route.toolName(),
+                        arguments,
+                        duration,
+                        success,
+                        errorMessage
+                    ));
                     executed = true;
                 }
 
                 if (!executed) {
-                    return "Warning: Gemini could not execute any MCP tools.";
+                    return new GeminiMCPResult("Warning: Gemini could not execute any MCP tools.", toolHistory);
                 }
             }
 
-            return "Warning: Gemini did not finish after multiple tool calls.";
+            return new GeminiMCPResult("Warning: Gemini did not finish after multiple tool calls.", toolHistory);
         } catch (Exception e) {
             MeteorMCPAddon.LOG.error("Gemini MCP execution failed: {}", e.getMessage());
-            return formatError(e);
+            return new GeminiMCPResult(formatError(e), List.of());
         }
     }
 

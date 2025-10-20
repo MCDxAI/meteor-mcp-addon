@@ -113,9 +113,9 @@ public class MCPServerConnection {
             // Initialize connection
             client.initialize();
 
-            // List available tools
+            // List available tools (copy to mutable list)
             ListToolsResult result = client.listTools();
-            tools = result.tools();
+            tools = new ArrayList<>(result.tools());
 
             connected = true;
             MeteorMCPAddon.LOG.info("Connected to MCP server: {} ({} tools available)",
@@ -135,7 +135,7 @@ public class MCPServerConnection {
      */
     public void disconnect() {
         connected = false;
-        tools.clear();
+        tools = new ArrayList<>();
 
         if (client != null) {
             try {

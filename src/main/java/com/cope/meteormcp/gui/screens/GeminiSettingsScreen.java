@@ -15,6 +15,7 @@ import meteordevelopment.meteorclient.gui.widgets.input.WIntEdit;
 import meteordevelopment.meteorclient.gui.widgets.input.WTextBox;
 import meteordevelopment.meteorclient.gui.widgets.pressable.WButton;
 import meteordevelopment.meteorclient.gui.widgets.pressable.WCheckbox;
+import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
 
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 
@@ -91,16 +92,23 @@ public class GeminiSettingsScreen extends WindowScreen {
 
     private void testConnection() {
         GeminiConfig draft = collectFormConfig();
+        GeminiConfig testConfig = draft.copy();
         // Ensure we attempt the test even when the user hasn't enabled it yet.
-        draft.setEnabled(true);
+        testConfig.setEnabled(true);
 
-        if (!draft.hasCredentials()) {
+        if (!testConfig.hasCredentials()) {
             updateStatus("Warning: enter an API key and pick a model before testing.", false);
             return;
         }
 
-        GeminiClientManager.TestResult result = GeminiClientManager.getInstance().testConfiguration(draft);
-        updateStatus(result.message(), result.success());
+        updateStatus("Testing Gemini credentials...", true);
+
+        MeteorExecutor.execute(() -> {
+            GeminiClientManager.TestResult result = GeminiClientManager.getInstance().testConfiguration(testConfig);
+            Runnable update = () -> updateStatus(result.message(), result.success());
+            if (mc != null) mc.execute(update);
+            else update.run();
+        });
     }
 
     private void save() {

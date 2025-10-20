@@ -1,5 +1,7 @@
 package com.cope.meteormcp;
 
+import com.cope.meteormcp.commands.GeminiCommand;
+import com.cope.meteormcp.commands.GeminiMCPCommand;
 import com.cope.meteormcp.gui.tabs.MCPTab;
 import com.cope.meteormcp.starscript.GeminiStarScriptIntegration;
 import com.cope.meteormcp.starscript.MCPToolExecutor;
@@ -8,9 +10,11 @@ import com.cope.meteormcp.systems.MCPServers;
 import io.modelcontextprotocol.spec.McpSchema.Tool;
 import meteordevelopment.meteorclient.addons.GithubRepo;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
+import meteordevelopment.meteorclient.commands.Commands;
 import meteordevelopment.meteorclient.gui.tabs.Tabs;
 import meteordevelopment.meteorclient.systems.Systems;
 import meteordevelopment.meteorclient.utils.misc.MeteorStarscript;
+import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
 import org.meteordev.starscript.value.Value;
 import org.meteordev.starscript.value.ValueMap;
 import org.slf4j.Logger;
@@ -41,12 +45,22 @@ public class MeteorMCPAddon extends MeteorAddon {
         Tabs.add(new MCPTab());
         LOG.info("MCP tab registered");
 
-        // Connect to auto-connect servers
-        MCPServers.get().connectAutoConnect();
-
         // Register Gemini helpers in StarScript
         GeminiStarScriptIntegration.register();
         LOG.info("Gemini StarScript functions registered");
+
+        // Register Gemini chat commands
+        GeminiCommand geminiCommand = new GeminiCommand();
+        Commands.add(geminiCommand);
+        geminiCommand.registerTo(Commands.DISPATCHER);
+
+        GeminiMCPCommand geminiMCPCommand = new GeminiMCPCommand();
+        Commands.add(geminiMCPCommand);
+        geminiMCPCommand.registerTo(Commands.DISPATCHER);
+        LOG.info("Gemini chat commands registered");
+
+        // Connect to auto-connect servers
+        MeteorExecutor.execute(() -> MCPServers.get().connectAutoConnect());
 
         LOG.info("Meteor MCP Addon initialized successfully");
     }
