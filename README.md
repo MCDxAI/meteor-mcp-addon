@@ -1,127 +1,161 @@
-# Meteor MCP Addon
+# Meteor MCP 🔌
 
-Meteor MCP bridges the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) with the
-Meteor Client mod. It lets you register MCP servers inside Meteor and call their tools directly
-from StarScript, giving HUD elements, chat macros, Discord presence, and other modules live access
-to external data and automation.
+**Model Context Protocol integration for Meteor Client**
 
-## Features
-- Configure MCP servers from an in-game GUI (STDIO transport supported today)
-- Auto-connect servers on startup and persist settings via Meteor's system storage
-- Browse tools, copy StarScript snippets, and execute them in real time
-- Register each tool globally as `{serverName.toolName(arg1, arg2)}` in StarScript
-- Dynamic chat commands for every connected MCP tool (`/server:tool …`) with help and tab completion
-- Gemini chat commands: `/gemini` for quick prompts, `/gemini-mcp` for LLM prompts with automatic MCP tool chaining
-- Clean shutdown and reconnect logic that keeps StarScript bindings and commands in sync
-- Includes the official MCP Java SDK and required runtime dependencies for zero-fuss installs
+![Minecraft](https://img.shields.io/badge/Minecraft-1.21.8-green?style=flat-square)
+![Fabric](https://img.shields.io/badge/Fabric-0.16.14-blue?style=flat-square)
+![Meteor](https://img.shields.io/badge/Meteor_Client-1.21.8--56-blueviolet?style=flat-square)
+![Java](https://img.shields.io/badge/Java-21-orange?style=flat-square)
+![MCP](https://img.shields.io/badge/MCP-0.14.1-red?style=flat-square)
 
-## Requirements
-- Minecraft 1.21.8 with Fabric Loader 0.16.14
-- Meteor Client 1.21.8-56 (bundled locally in `libs/` for development)
-- Java 21 (for building and running the addon)
-- At least one MCP-compatible server binary or script to connect to
+A Meteor Client addon that bridges the Model Context Protocol (MCP) with Minecraft. Connect to MCP servers and call their tools directly from StarScript expressions, chat commands, and optionally via Gemini AI.
 
-## Installing
-1. Build the addon (`./gradlew clean build`). The output jar will be in `build/libs/`.
-2. Copy the `meteor-mcp-<version>-fabric.jar` into your Minecraft `mods` directory alongside
-   Meteor Client.
-3. Launch Minecraft. A new **MCP** tab will appear in the Meteor GUI.
+## 🎯 Core Features
 
-## Configuring Servers
-1. Open Meteor (default key: `Right Shift`) and select the **MCP** tab.
-2. Press **Add Server** and supply:
-   - **Name** – used for display and the StarScript namespace
-   - **Command/Args** – executable plus arguments when using STDIO transport
-   - Optional environment variables, timeout, and auto-connect flag
-3. Save the server, then choose **Connect**. Successful connections will immediately expose the
-   remote tools to StarScript.
-4. Use **Tools** to browse metadata, copy example usage strings, and verify the connection.
+| Feature | Description |
+|---------|-------------|
+| **MCP Server Management** | Connect multiple MCP servers with persistent configuration and auto-connect on startup |
+| **StarScript Integration** | Access tools as `{serverName.toolName(args)}` in HUD elements, chat macros, and Discord presence |
+| **Dynamic Chat Commands** | Automatically registered `/serverName:toolName` commands with help and tab completion |
+| **Gemini AI (Optional)** | Simple queries via `/gemini` or MCP-enhanced orchestration via `/gemini-mcp` |
 
-Servers can be edited, removed, or reconnected at any time. Removing or disconnecting a server
-automatically unregisters its StarScript functions to avoid stale entries.
-
-## Configuring Gemini
-1. Open Meteor (default key: `Right Shift`) and select the **MCP** tab.
-2. Click **Configure Gemini API**.
-3. Enter your Gemini API key, choose a model, adjust token/temperature limits if needed, and enable the toggle.
-4. Use **Test Connection** to verify the credentials, then **Save** to persist the configuration.
-
-The Gemini client is cached and automatically refreshed when you update settings. Disabling the toggle keeps
-your settings on disk without attempting any Gemini calls.
-
-## Using StarScript
-After connecting a server, the addon registers each tool under the server's name. Example:
-
-```text
-{weather.get_forecast(player.pos.x, player.pos.z)}
-```
-
-Place the expression anywhere StarScript is supported—HUD text elements, chat commands, macros,
-Discord presence, modules, etc. Arguments are automatically converted to the JSON payload expected
-by the tool schema, and results are converted back to StarScript-friendly values.
-
-With Gemini enabled you also gain two helper functions:
-
-```text
-{gemini("Summarize the latest chat message")}
-{gemini_mcp("Fetch the current weather using any connected servers and summarize it")}
-```
-
-`gemini` performs a simple LLM call. `gemini_mcp` lets Gemini inspect every connected MCP server and
-autonomously invoke tools as part of its reasoning loop.
-
-## Command Interface
-
-### MCP Tool Commands
-- Syntax: `/server_name:tool_name [arguments]`
-- Supports positional arguments (`/weather:get_forecast "London" 3`)
-- Supports named arguments (`/weather:get_forecast location="London" days=3`)
-- Accepts raw JSON payloads (`/database:query {"table":"users","limit":10}`)
-- Built-in help via `/server:tool help`
-- Tab completion suggests parameter names (`days=`, `location=`, …)
-
-Commands register dynamically when a server connects and disappear automatically on disconnect, so the chat list always mirrors your active MCP environment.
-
-### Gemini Commands
-- `/gemini "prompt"` – fire-and-forget Gemini prompt (no MCP tools)
-- `/gemini-mcp "prompt"` – Gemini with full access to every connected MCP tool
-
-Responses from `/gemini-mcp` show which tools were used:  
-`[Tools Used] weather:get_forecast (125ms), calendar:create_event (341ms)`
-
-Gemini commands run asynchronously (they never freeze chat) and include a lightweight cooldown to prevent accidental spam/API overuse. If Gemini isn't configured yet, the commands guide you back to the MCP tab.
-
-## Development
+## 🚀 Getting Started
 
 ### Prerequisites
-- Java 21 (`openjdk-21` or newer JDK 21 distribution)
-- Gradle wrapper included with the project
 
-### Building
+- Node.js 18+ (for NPM-based MCP servers)
+- Minecraft 1.21.8 with Fabric Loader 0.16.14
+- Meteor Client 1.21.8-56
+- Java 21 (for building)
+
+### Installation
+
 ```bash
+# 1. Clone or download the repository
+git clone https://github.com/GhostTypes/meteor-mcp-addon.git
+
+# 2. Build the addon
 ./gradlew clean build
+
+# 3. Copy the jar to your mods folder
+cp build/libs/meteor-mcp-0.1.0-fabric.jar ~/.minecraft/mods/
+
+# 4. Launch Minecraft with Meteor Client
 ```
 
-Gradle downloads the necessary dependencies (Meteor Client jar, MCP SDK, Reactor, etc.) and bundles
-them into the addon jar. Build artifacts land in `build/libs/`. The project also supports the usual
-IDE run configurations supplied by the standard Meteor addon template if you want to launch a dev
-client.
+The MCP tab will appear in the Meteor GUI (Right Shift).
 
-### Source Layout
-- `com.cope.meteormcp.MeteorMCPAddon` – addon entry point
-- `systems` – persistence, configuration, and connection lifecycle management
-- `starscript` – adapters that convert between StarScript values and MCP payloads
+## 📋 Usage
 
-Each component is fully documented in-code for easier onboarding.
+### Connecting MCP Servers
 
-## Troubleshooting
-- Use the Chat or log output to confirm connection success. The addon logs failures with enough
-  detail to diagnose command misconfiguration or server crashes.
-- If a tool signature changes while connected, reconnect the server (or use auto-connect on startup)
-  so the StarScript namespace refreshes.
-- Runtime dependencies are shaded into the jar. If you see missing-class errors, rebuild to ensure
-  the latest jars are bundled.
+**Via GUI:**
+1. Open Meteor GUI (Right Shift) and navigate to the MCP tab
+2. Click "Add Server"
+3. Enter server name and command (e.g., `npx -y @modelcontextprotocol/server-filesystem /path/to/directory`)
+4. Enable "Auto Connect" (optional)
+5. Save and Connect
 
-## License
+**Common MCP Servers:**
 
-Distributed under the license included in `LICENSE`. Refer to that file for details.
+| Server | Command | Use Case |
+|--------|---------|----------|
+| Filesystem | `npx -y @modelcontextprotocol/server-filesystem /path` | Read/write files, list directories |
+| Git | `npx -y @modelcontextprotocol/server-git /repo` | Git operations (status, commit, log) |
+| Time | `npx -y @modelcontextprotocol/server-time` | Time zone conversion, current time |
+
+### StarScript Examples
+
+After connecting servers, tools become available in any StarScript context:
+
+```
+{fs.read_file("config.json")}
+{git.status()}
+{time.get_current_time("America/New_York")}
+```
+
+Use these expressions in:
+- HUD text elements
+- Chat macros
+- Discord Rich Presence
+- Custom Meteor modules
+
+### Chat Command Examples
+
+```bash
+# File operations
+/fs:read_file path="mods/meteor.json"
+/fs:list_directory path="/home/user/minecraft"
+
+# Git operations
+/git:status
+/git:commit message="Update configuration"
+
+# Time queries
+/time:get_current_time timezone="UTC"
+
+# JSON arguments
+/database:query {"table":"users","limit":10}
+
+# Get help for any tool
+/fs:read_file help
+```
+
+## 🤖 Gemini AI Integration (Optional)
+
+### Setup
+
+1. Navigate to MCP tab and click "Configure Gemini API"
+2. Enter API key from [ai.google.dev](https://ai.google.dev)
+3. Select model (Gemini 2.5 Pro, Flash, or Flash Lite)
+4. Test connection and save
+
+### Usage
+
+**Simple prompts:**
+```bash
+/gemini "Explain what StarScript is"
+{gemini("What is the current Minecraft version?")}
+```
+
+**MCP-enhanced prompts:**
+```bash
+/gemini-mcp "Read my config.json and explain each setting"
+/gemini-mcp "Check git status and suggest next steps"
+{gemini_mcp("Get the current time in Tokyo")}
+```
+
+The `/gemini-mcp` command allows Gemini to automatically discover and call any connected MCP tool. Tool usage is reported in the response.
+
+## 🔧 Technical Details
+
+**Architecture:**
+- **Transport**: STDIO fully implemented (SSE/HTTP planned)
+- **Dependencies**: MCP Java SDK, Reactor Core, Google GenAI SDK (all shaded into jar)
+- **Execution**: Thread-safe, async tool execution with automatic type conversion
+- **Storage**: Persistent configuration via Meteor's NBT system
+
+**Supported Argument Formats:**
+- Positional: `/tool arg1 arg2 arg3`
+- Named: `/tool key1=value1 key2=value2`
+- JSON: `/tool {"key": "value", "nested": {...}}`
+
+**Rate Limiting:**
+- 5-second reconnect cooldown on MCP server failures
+- Per-player cooldown on Gemini chat commands
+
+## 📚 Resources
+
+- [MCP Specification](https://modelcontextprotocol.io/)
+- [MCP Java SDK](https://github.com/modelcontextprotocol/java-sdk)
+- [Meteor Client](https://github.com/MeteorDevelopment/meteor-client)
+- [StarScript Documentation](https://github.com/MeteorDevelopment/starscript)
+- [Gemini API](https://ai.google.dev/gemini-api/docs)
+
+## 📄 License
+
+This project is licensed under CC0 1.0 Universal (Public Domain). See [LICENSE](LICENSE) for details.
+
+---
+
+**Author:** Cope | **Version:** 0.1.0 | **Mod ID:** meteor-mcp

@@ -7,12 +7,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a **Meteor Client addon** that bridges the **Model Context Protocol (MCP)** with **Minecraft** via **StarScript**. It enables:
 - MCP servers to run and expose tools inside Minecraft
 - StarScript expressions to call MCP tools in real-time (e.g., HUD elements, chat macros, Discord presence)
-- **Future**: Gemini AI integration to intelligently use MCP tools from within Minecraft
+- Gemini AI integration to intelligently use MCP tools from within Minecraft
+- Chat commands for direct MCP tool invocation and AI-powered conversations
 
 ### Current Status
-- ✅ **Phase 1 Complete**: MCP server management, StarScript tool registration, GUI for configuration
-- ✅ **Phase 2 Complete**: Gemini AI integration to use MCP tools intelligently
-- ✅ **Phase 3 Complete**: Chat command system (`/server:tool`, `/gemini`, `/gemini-mcp`) with dynamic registration and help
+**🎉 All Core Features Complete!**
+
+- ✅ **MCP Integration**: Full STDIO transport support with server management, tool discovery, and execution
+- ✅ **StarScript Integration**: Dynamic tool registration, argument conversion, result handling
+- ✅ **Gemini AI Integration**: Multi-turn conversations with automatic MCP tool calling
+- ✅ **Chat Commands**: Dynamic `/server:tool`, `/gemini`, and `/gemini-mcp` with help system
+- ✅ **GUI System**: Complete configuration screens for servers, tools, and Gemini settings
+- ✅ **Persistence**: NBT-based storage for all configurations
+
+### Future Enhancements
+- 🔄 **SSE/HTTP Transport**: Additional transport types for MCP servers (currently STDIO only)
 
 ## Technology Stack
 
@@ -25,7 +34,8 @@ This is a **Meteor Client addon** that bridges the **Model Context Protocol (MCP
 ### MCP Integration
 - **MCP Java SDK 0.14.1** (`io.modelcontextprotocol.sdk:mcp`)
   - `mcp-core`, `mcp-json`, `mcp-json-jackson2` modules
-  - STDIO transport (SSE/HTTP planned but not yet implemented)
+  - STDIO transport (fully implemented)
+  - SSE/HTTP transport (planned for future release)
 - **Reactor Core 3.6.5**: Reactive streams for async MCP communication
 - **JSON Schema Validator 1.5.7**: Schema validation for MCP tool definitions
 
@@ -100,7 +110,7 @@ External MCP Server Process
 
 - **`MCPServerConfig.java`**: Configuration model
   - Stores: name, transport type, command/args, URL, env vars, timeout, auto-connect flag
-  - `TransportType`: STDIO (working), SSE/HTTP (planned)
+  - `TransportType`: STDIO (fully implemented), SSE/HTTP (planned)
   - Validation: `isValid()` ensures required fields per transport type
   - NBT serialization for Meteor's system storage
 
@@ -342,7 +352,7 @@ When fetching documentation from URLs, prefer `mcp__cloudscraper-mcp__scrape_url
 - Verify command: Run MCP server command manually in terminal
 - Check timeout: Default 5s, increase if server is slow to start
 - Reconnect cooldown: 5 seconds between reconnect attempts
-- STDIO transport only: SSE/HTTP not yet implemented
+- Transport types: STDIO fully supported, SSE/HTTP planned for future
 
 ### Testing StarScript Expressions
 1. Connect to MCP server in GUI

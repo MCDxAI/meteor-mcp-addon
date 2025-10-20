@@ -15,7 +15,8 @@
       "Read(//c/Users/Cope/Documents/GitHub/**)",
       "Bash(tree -d -L 3 \"/c/Users/Cope/Documents/GitHub/meteor-mcp-addon/ai_reference/MeteorPlus/src/main/java/nekiplay/meteorplus\")",
       "Bash(tree \"C:\\Users\\Cope\\Documents\\GitHub\\meteor-skyblock-addon\\src\\main\\java\" -L 3)",
-      "Bash(tree ai_reference -L 2 -I '.git')"
+      "Bash(tree ai_reference -L 2 -I '.git')",
+      "mcp__code-context-provider-mcp__get_code_context"
     ],
     "deny": [],
     "ask": []
