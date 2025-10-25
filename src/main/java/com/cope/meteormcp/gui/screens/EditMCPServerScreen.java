@@ -28,6 +28,7 @@ public class EditMCPServerScreen extends WindowScreen {
     private WDropdown<MCPServerConfig.TransportType> transportInput;
     private WTextBox commandInput;
     private WTextBox argsInput;
+    private WTextBox workingDirInput;
     private WTextBox urlInput;
     private WTextBox envInput;
     private WCheckbox autoConnectInput;
@@ -59,6 +60,10 @@ public class EditMCPServerScreen extends WindowScreen {
         String argsStr = originalConfig.getArgs() != null ?
             String.join(",", originalConfig.getArgs()) : "";
         argsInput = add(theme.textBox(argsStr)).expandX().widget();
+
+        add(theme.label("Working Directory (optional):"));
+        String workingDir = originalConfig.getWorkingDirectory() != null ? originalConfig.getWorkingDirectory() : "";
+        workingDirInput = add(theme.textBox(workingDir)).expandX().widget();
 
         // SSE/HTTP fields
         add(theme.label("URL:"));
@@ -125,6 +130,12 @@ public class EditMCPServerScreen extends WindowScreen {
                     args[i] = args[i].trim();
                 }
                 config.setArgs(java.util.Arrays.asList(args));
+            }
+
+            // Set working directory if provided
+            String workingDir = workingDirInput.get().trim();
+            if (!workingDir.isEmpty()) {
+                config.setWorkingDirectory(workingDir);
             }
         } else {
             String url = urlInput.get().trim();

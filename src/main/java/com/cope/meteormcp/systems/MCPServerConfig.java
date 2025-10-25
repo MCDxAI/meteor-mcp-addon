@@ -18,6 +18,7 @@ public class MCPServerConfig {
     private TransportType transport;
     private String command;
     private List<String> args;
+    private String workingDirectory;
     private String url;
     private Map<String, String> env;
     private boolean autoConnect;
@@ -54,6 +55,7 @@ public class MCPServerConfig {
     public TransportType getTransport() { return transport; }
     public String getCommand() { return command; }
     public List<String> getArgs() { return args; }
+    public String getWorkingDirectory() { return workingDirectory; }
     public String getUrl() { return url; }
     public Map<String, String> getEnv() { return env; }
     public boolean isAutoConnect() { return autoConnect; }
@@ -64,6 +66,7 @@ public class MCPServerConfig {
     public void setTransport(TransportType transport) { this.transport = transport; }
     public void setCommand(String command) { this.command = command; }
     public void setArgs(List<String> args) { this.args = args != null ? args : new ArrayList<>(); }
+    public void setWorkingDirectory(String workingDirectory) { this.workingDirectory = workingDirectory; }
     public void setUrl(String url) { this.url = url; }
     public void setEnv(Map<String, String> env) { this.env = env != null ? env : new HashMap<>(); }
     public void setAutoConnect(boolean autoConnect) { this.autoConnect = autoConnect; }
@@ -84,6 +87,10 @@ public class MCPServerConfig {
 
         if (command != null) {
             tag.putString("command", command);
+        }
+
+        if (workingDirectory != null) {
+            tag.putString("workingDirectory", workingDirectory);
         }
 
         if (url != null) {
@@ -130,6 +137,7 @@ public class MCPServerConfig {
         config.setTimeout(tag.getInt("timeout").orElse(5000));
 
         tag.getString("command").ifPresent(config::setCommand);
+        tag.getString("workingDirectory").ifPresent(config::setWorkingDirectory);
         tag.getString("url").ifPresent(config::setUrl);
 
         // Deserialize args list

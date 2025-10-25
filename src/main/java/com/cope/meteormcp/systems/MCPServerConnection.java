@@ -88,11 +88,42 @@ public class MCPServerConnection {
      */
     private boolean connectStdio() {
         try {
-            // Build ServerParameters
-            ServerParameters.Builder paramsBuilder = ServerParameters.builder(config.getCommand());
+            String command = config.getCommand();
+            List<String> args = config.getArgs() != null ? new ArrayList<>(config.getArgs()) : new ArrayList<>();
 
-            if (config.getArgs() != null && !config.getArgs().isEmpty()) {
-                paramsBuilder.args(config.getArgs());
+            // If working directory is set, wrap command in shell
+            if (config.getWorkingDirectory() != null && !config.getWorkingDirectory().trim().isEmpty()) {
+                String workingDir = config.getWorkingDirectory();
+
+                // Build the full command string with args
+                StringBuilder fullCommand = new StringBuilder(command);
+                for (String arg : args) {
+                    fullCommand.append(" ").append(arg);
+                }
+
+                // Detect OS and wrap appropriately
+                boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
+
+                if (isWindows) {
+                    // Windows: cmd.exe /c "cd /d <workingDir> && <command> <args>"
+                    command = "cmd.exe";
+                    args = new ArrayList<>();
+                    args.add("/c");
+                    args.add("cd /d " + workingDir + " && " + fullCommand.toString());
+                } else {
+                    // Linux/Mac: sh -c "cd <workingDir> && <command> <args>"
+                    command = "sh";
+                    args = new ArrayList<>();
+                    args.add("-c");
+                    args.add("cd " + workingDir + " && " + fullCommand.toString());
+                }
+            }
+
+            // Build ServerParameters
+            ServerParameters.Builder paramsBuilder = ServerParameters.builder(command);
+
+            if (!args.isEmpty()) {
+                paramsBuilder.args(args);
             }
 
             if (config.getEnv() != null && !config.getEnv().isEmpty()) {

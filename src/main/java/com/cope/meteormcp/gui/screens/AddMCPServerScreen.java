@@ -24,6 +24,7 @@ public class AddMCPServerScreen extends WindowScreen {
     private WDropdown<MCPServerConfig.TransportType> transportInput;
     private WTextBox commandInput;
     private WTextBox argsInput;
+    private WTextBox workingDirInput;
     private WTextBox urlInput;
     private WTextBox envInput;
     private WCheckbox autoConnectInput;
@@ -51,6 +52,9 @@ public class AddMCPServerScreen extends WindowScreen {
 
         add(theme.label("Arguments (comma separated):"));
         argsInput = add(theme.textBox("-m,weather_server")).expandX().widget();
+
+        add(theme.label("Working Directory (optional):"));
+        workingDirInput = add(theme.textBox("")).expandX().widget();
 
         // SSE/HTTP fields
         add(theme.label("URL:"));
@@ -109,6 +113,12 @@ public class AddMCPServerScreen extends WindowScreen {
                     args[i] = args[i].trim();
                 }
                 config.setArgs(java.util.Arrays.asList(args));
+            }
+
+            // Set working directory if provided
+            String workingDir = workingDirInput.get().trim();
+            if (!workingDir.isEmpty()) {
+                config.setWorkingDirectory(workingDir);
             }
         } else {
             String url = urlInput.get().trim();
