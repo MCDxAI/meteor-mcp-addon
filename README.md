@@ -2,9 +2,9 @@
 
 **Model Context Protocol & Gemini integration for Meteor Client**
 
-![Minecraft](https://img.shields.io/badge/Minecraft-1.21.8-green?style=flat-square)
-![Fabric](https://img.shields.io/badge/Fabric-0.16.14-blue?style=flat-square)
-![Meteor](https://img.shields.io/badge/Meteor_Client-1.21.8--56-blueviolet?style=flat-square)
+![Minecraft](https://img.shields.io/badge/Minecraft-1.21.10-green?style=flat-square)
+![Fabric](https://img.shields.io/badge/Fabric-0.17.3-blue?style=flat-square)
+![Meteor](https://img.shields.io/badge/Meteor_Client-1.21.10--32-blueviolet?style=flat-square)
 ![Java](https://img.shields.io/badge/Java-21-orange?style=flat-square)
 ![MCP](https://img.shields.io/badge/MCP-0.14.1-red?style=flat-square)
 

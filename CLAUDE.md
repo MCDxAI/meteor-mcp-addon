@@ -27,8 +27,8 @@ This is a **Meteor Client addon** that bridges the **Model Context Protocol (MCP
 
 ### Core Dependencies
 - **Java 21**: Target and source compatibility
-- **Minecraft 1.21.8** with **Fabric Loader 0.16.14**
-- **Meteor Client 1.21.8-56**: Bundled locally in `libs/` for development
+- **Minecraft 1.21.10** with **Fabric Loader 0.17.3**
+- **Meteor Client 1.21.10-32**: Bundled locally in `libs/` for development
 - **Gradle 8.x** with Kotlin DSL (`build.gradle.kts`)
 
 ### MCP Integration
