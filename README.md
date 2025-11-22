@@ -1,85 +1,109 @@
-# Meteor MCP Addon 🔌
+<div align="center">
+  <h1>Meteor MCP Addon</h1>
+  <p><strong>Model Context Protocol & Gemini integration for Meteor Client</strong></p>
 
-**Model Context Protocol & Gemini integration for Meteor Client**
+  <p>
+    <img src="https://img.shields.io/badge/Minecraft-1.21.10-green?style=for-the-badge" alt="Minecraft">
+    <img src="https://img.shields.io/badge/Fabric-0.17.3-blue?style=for-the-badge" alt="Fabric">
+    <img src="https://img.shields.io/badge/Meteor_Client-1.21.10--32-blueviolet?style=for-the-badge" alt="Meteor Client">
+    <img src="https://img.shields.io/badge/Java-21-orange?style=for-the-badge" alt="Java">
+    <img src="https://img.shields.io/badge/MCP-0.14.1-red?style=for-the-badge" alt="MCP">
+  </p>
 
-![Minecraft](https://img.shields.io/badge/Minecraft-1.21.10-green?style=flat-square)
-![Fabric](https://img.shields.io/badge/Fabric-0.17.3-blue?style=flat-square)
-![Meteor](https://img.shields.io/badge/Meteor_Client-1.21.10--32-blueviolet?style=flat-square)
-![Java](https://img.shields.io/badge/Java-21-orange?style=flat-square)
-![MCP](https://img.shields.io/badge/MCP-0.14.1-red?style=flat-square)
+  <p>A Meteor Client addon that bridges the Model Context Protocol (MCP) with Minecraft. Connect to MCP servers and call their tools directly from StarScript expressions, chat commands, and optionally via Gemini AI.</p>
 
-A Meteor Client addon that bridges the Model Context Protocol (MCP) with Minecraft. Connect to MCP servers and call their tools directly from StarScript expressions, chat commands, and optionally via Gemini AI.
+  <h2>Features</h2>
+  <table>
+    <tr>
+      <th>Feature</th>
+      <th>Description</th>
+    </tr>
+    <tr>
+      <td><strong>MCP Server Management</strong></td>
+      <td>Connect multiple MCP servers with persistent configuration and auto-connect on startup</td>
+    </tr>
+    <tr>
+      <td><strong>StarScript Integration</strong></td>
+      <td>Access tools as <code>{serverName.toolName(args)}</code> in HUD elements, chat macros, and anywhere starscript placeholders are used.</td>
+    </tr>
+    <tr>
+      <td><strong>Dynamic Chat Commands</strong></td>
+      <td>Automatically registered <code>/serverName:toolName</code> commands with help and tab completion</td>
+    </tr>
+    <tr>
+      <td><strong>Gemini AI (Optional)</strong></td>
+      <td>Direct requests with <code>/gemini</code> or MCP-enhanced requests with <code>/gemini-mcp</code></td>
+    </tr>
+  </table>
 
-## Features
+  <h2>Usage</h2>
 
-| Feature | Description |
-|---------|-------------|
-| **MCP Server Management** | Connect multiple MCP servers with persistent configuration and auto-connect on startup |
-| **StarScript Integration** | Access tools as `{serverName.toolName(args)}` in HUD elements, chat macros, and anywhere starscript placeholders are used. |
-| **Dynamic Chat Commands** | Automatically registered `/serverName:toolName` commands with help and tab completion |
-| **Gemini AI (Optional)** | Direct requests withi `/gemini` or MCP-enhanced requests with `/gemini-mcp` |
+  <h3>Connecting MCP Servers</h3>
 
+  <p><strong>Via GUI:</strong></p>
+  <p>1. Open Meteor GUI (Right Shift) and navigate to the MCP tab</p>
+  <p>2. Click "Add Server"</p>
+  <p>3. Enter server name and command (e.g., <code>npx -y @modelcontextprotocol/server-time</code>)</p>
+  <p>4. Enable "Auto Connect" (optional)</p>
+  <p>5. Save and Connect</p>
 
-## 📋 Usage
+  <p><strong>Common MCP Servers:</strong></p>
 
-### Connecting MCP Servers
+  <table>
+    <tr>
+      <th>Server</th>
+      <th>Command</th>
+      <th>Use Case</th>
+    </tr>
+    <tr>
+      <td>Time</td>
+      <td><code>npx -y @modelcontextprotocol/server-time</code></td>
+      <td>Time zone conversion, current time</td>
+    </tr>
+  </table>
 
-**Via GUI:**
-1. Open Meteor GUI (Right Shift) and navigate to the MCP tab
-2. Click "Add Server"
-3. Enter server name and command (e.g., `npx -y @modelcontextprotocol/server-time`)
-4. Enable "Auto Connect" (optional)
-5. Save and Connect
+  <h3>StarScript Examples</h3>
 
-**Common MCP Servers:**
+  <p>After connecting servers, tools become available in any StarScript context:</p>
 
-| Server | Command | Use Case |
-|--------|---------|----------|
-| Time | `npx -y @modelcontextprotocol/server-time` | Time zone conversion, current time |
+  <table>
+    <tr><td><code>{time.get_current_time("America/New_York")}</code></td></tr>
+  </table>
 
-### StarScript Examples
+  <p>Use these expressions in:</p>
+  <p>- HUD text elements</p>
+  <p>- Chat macros</p>
+  <p>- Anywhere Starscript placeholders are used</p>
 
-After connecting servers, tools become available in any StarScript context:
+  <h3>Chat Command Examples</h3>
 
-```
-{time.get_current_time("America/New_York")}
-```
+  <table>
+    <tr><td><code># Time queries</code></td></tr>
+    <tr><td><code>/time:get_current_time timezone="UTC"</code></td></tr>
+  </table>
 
-Use these expressions in:
-- HUD text elements
-- Chat macros
-- Anywhere Starscript placeholders are used
+  <h2>Gemini AI Integration (Optional)</h2>
 
-### Chat Command Examples
+  <h3>Setup</h3>
 
-```bash
-# Time queries
-/time:get_current_time timezone="UTC"
-```
+  <p>1. Navigate to MCP tab and click "Configure Gemini API"</p>
+  <p>2. Enter API key from <a href="https://ai.google.dev">ai.google.dev</a></p>
+  <p>3. Select model (Gemini 2.5 Pro, Flash, or Flash Lite)</p>
+  <p>4. Test connection and save</p>
 
-## 🤖 Gemini AI Integration (Optional)
+  <h3>Usage</h3>
 
-### Setup
+  <p><strong>Simple prompts:</strong></p>
+  <table>
+    <tr><td><code>/gemini "Explain what StarScript is"</code></td></tr>
+    <tr><td><code>{gemini("What is the current Minecraft version?")}</code></td></tr>
+  </table>
 
-1. Navigate to MCP tab and click "Configure Gemini API"
-2. Enter API key from [ai.google.dev](https://ai.google.dev)
-3. Select model (Gemini 2.5 Pro, Flash, or Flash Lite)
-4. Test connection and save
+  <p><strong>MCP-enhanced prompts:</strong></p>
+  <table>
+    <tr><td><code>/gemini-mcp "Read my config.json and explain each setting"</code></td></tr>
+    <tr><td><code>{gemini_mcp("Get the current time in Tokyo")}</code></td></tr>
+  </table>
 
-### Usage
-
-**Simple prompts:**
-```bash
-/gemini "Explain what StarScript is"
-{gemini("What is the current Minecraft version?")}
-```
-
-**MCP-enhanced prompts:**
-```bash
-/gemini-mcp "Read my config.json and explain each setting"
-{gemini_mcp("Get the current time in Tokyo")}
-```
-
-The `/gemini-mcp` command allows Gemini to automatically discover and call any connected MCP tool. Tool usage is reported in the response.
-
-
+  <p>The <code>/gemini-mcp</code> command allows Gemini to automatically discover and call any connected MCP tool. Tool usage is reported in the response.</p>
+</div>
