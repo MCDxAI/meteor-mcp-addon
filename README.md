@@ -40,12 +40,14 @@
 
   <h3>Connecting MCP Servers</h3>
 
-  <p><strong>Via GUI:</strong></p>
-  <p>1. Open Meteor GUI (Right Shift) and navigate to the MCP tab</p>
-  <p>2. Click "Add Server"</p>
-  <p>3. Enter server name and command (e.g., <code>npx -y @modelcontextprotocol/server-time</code>)</p>
-  <p>4. Enable "Auto Connect" (optional)</p>
-  <p>5. Save and Connect</p>
+  <table>
+    <tr><td><strong>Via GUI:</strong></td></tr>
+    <tr><td>1. Open Meteor GUI (Right Shift) and navigate to the MCP tab</td></tr>
+    <tr><td>2. Click "Add Server"</td></tr>
+    <tr><td>3. Enter server name and command (e.g., <code>npx -y @modelcontextprotocol/server-time</code>)</td></tr>
+    <tr><td>4. Enable "Auto Connect" (optional)</td></tr>
+    <tr><td>5. Save and Connect</td></tr>
+  </table>
 
   <p><strong>Common MCP Servers:</strong></p>
 
@@ -64,16 +66,14 @@
 
   <h3>StarScript Examples</h3>
 
-  <p>After connecting servers, tools become available in any StarScript context:</p>
-
   <table>
+    <tr><td>After connecting servers, tools become available in any StarScript context:</td></tr>
     <tr><td><code>{time.get_current_time("America/New_York")}</code></td></tr>
+    <tr><td>Use these expressions in:</td></tr>
+    <tr><td>- HUD text elements</td></tr>
+    <tr><td>- Chat macros</td></tr>
+    <tr><td>- Anywhere Starscript placeholders are used</td></tr>
   </table>
-
-  <p>Use these expressions in:</p>
-  <p>- HUD text elements</p>
-  <p>- Chat macros</p>
-  <p>- Anywhere Starscript placeholders are used</p>
 
   <h3>Chat Command Examples</h3>
 
@@ -86,24 +86,22 @@
 
   <h3>Setup</h3>
 
-  <p>1. Navigate to MCP tab and click "Configure Gemini API"</p>
-  <p>2. Enter API key from <a href="https://ai.google.dev">ai.google.dev</a></p>
-  <p>3. Select model (Gemini 2.5 Pro, Flash, or Flash Lite)</p>
-  <p>4. Test connection and save</p>
+  <table>
+    <tr><td>1. Navigate to MCP tab and click "Configure Gemini API"</td></tr>
+    <tr><td>2. Enter API key from <a href="https://ai.google.dev">ai.google.dev</a></td></tr>
+    <tr><td>3. Select model (Gemini 2.5 Pro, Flash, or Flash Lite)</td></tr>
+    <tr><td>4. Test connection and save</td></tr>
+  </table>
 
   <h3>Usage</h3>
 
-  <p><strong>Simple prompts:</strong></p>
   <table>
+    <tr><td><strong>Simple prompts:</strong></td></tr>
     <tr><td><code>/gemini "Explain what StarScript is"</code></td></tr>
     <tr><td><code>{gemini("What is the current Minecraft version?")}</code></td></tr>
-  </table>
-
-  <p><strong>MCP-enhanced prompts:</strong></p>
-  <table>
+    <tr><td><strong>MCP-enhanced prompts:</strong></td></tr>
     <tr><td><code>/gemini-mcp "Read my config.json and explain each setting"</code></td></tr>
     <tr><td><code>{gemini_mcp("Get the current time in Tokyo")}</code></td></tr>
+    <tr><td>The <code>/gemini-mcp</code> command allows Gemini to automatically discover and call any connected MCP tool. Tool usage is reported in the response.</td></tr>
   </table>
-
-  <p>The <code>/gemini-mcp</code> command allows Gemini to automatically discover and call any connected MCP tool. Tool usage is reported in the response.</p>
 </div>
