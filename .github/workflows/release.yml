@@ -57,8 +57,11 @@ jobs:
               PRERELEASE="false"
             fi
           else
-            TAG="snapshot"
-            RELEASE_NAME="Dev Build"
+            # Use version from gradle.properties + timestamp for dev builds
+            VERSION=$(grep "^mod_version=" gradle.properties | cut -d'=' -f2)
+            TIMESTAMP=$(date -u +%Y%m%d-%H%M%S)
+            TAG="v${VERSION}-dev.${TIMESTAMP}"
+            RELEASE_NAME="Dev Build (${TIMESTAMP})"
             PRERELEASE="true"
           fi
           {
