@@ -1,10 +1,10 @@
 plugins {
-    id("fabric-loom") version "1.12-SNAPSHOT"
+    alias(libs.plugins.fabric.loom)
 }
 
 base {
     archivesName = properties["archives_base_name"] as String
-    version = properties["mod_version"] as String
+    version = libs.versions.mod.version.get()
     group = properties["maven_group"] as String
 }
 
@@ -18,56 +18,71 @@ repositories {
         name = "meteor-maven-snapshots"
         url = uri("https://maven.meteordev.org/snapshots")
     }
-    flatDir {
-        dirs("libs")
-    }
 }
 
 dependencies {
     // Fabric
-    minecraft("com.mojang:minecraft:${properties["minecraft_version"] as String}")
-    mappings("net.fabricmc:yarn:${properties["yarn_mappings"] as String}:v2")
-    modImplementation("net.fabricmc:fabric-loader:${properties["loader_version"] as String}")
+    minecraft(libs.minecraft)
+    mappings(variantOf(libs.yarn) { classifier("v2") })
+    modImplementation(libs.fabric.loader)
 
-    // Meteor - using local JAR for consistent version
-    modImplementation(files("libs/meteor-client-${properties["meteor_version"] as String}.jar"))
+    // Meteor
+    modImplementation(libs.meteor.client)
 
     // StarScript (separate dependency, not bundled in Meteor)
-    implementation("org.meteordev:starscript:0.2.3")
+    implementation(libs.starscript)
 
-    val mcpVersion = properties["mcp_version"] as String
-    modImplementation("io.modelcontextprotocol.sdk:mcp:${mcpVersion}")!!.let { include(it) }
-    modImplementation("io.modelcontextprotocol.sdk:mcp-core:${mcpVersion}")!!.let { include(it) }
-    modImplementation("io.modelcontextprotocol.sdk:mcp-json:${mcpVersion}")!!.let { include(it) }
-    modImplementation("io.modelcontextprotocol.sdk:mcp-json-jackson2:${mcpVersion}")!!.let { include(it) }
+    // MCP SDK
+    modImplementation(libs.mcp)
+    include(libs.mcp)
+    modImplementation(libs.mcpCore)
+    include(libs.mcpCore)
+    modImplementation(libs.mcpJson)
+    include(libs.mcpJson)
+    modImplementation(libs.mcpJsonJackson2)
+    include(libs.mcpJsonJackson2)
 
-    modImplementation("org.reactivestreams:reactive-streams:1.0.4")!!.let { include(it) }
-    modImplementation("io.projectreactor:reactor-core:3.6.5")!!.let { include(it) }
-    modImplementation("com.networknt:json-schema-validator:1.5.7")!!.let { include(it) }
+    modImplementation(libs.reactiveStreams)
+    include(libs.reactiveStreams)
+    modImplementation(libs.reactorCore)
+    include(libs.reactorCore)
+    modImplementation(libs.jsonSchemaValidator)
+    include(libs.jsonSchemaValidator)
 
-    val geminiVersion = properties["gemini_version"] as String
-    modImplementation("com.google.genai:google-genai:${geminiVersion}")!!.let { include(it) }
-    modImplementation("com.squareup.okhttp3:okhttp:4.12.0")!!.let { include(it) }
-    modImplementation("com.squareup.okio:okio-jvm:3.6.0")!!.let { include(it) }
-    modImplementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.10")!!.let { include(it) }
-    modImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.10")!!.let { include(it) }
-    modImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.10")!!.let { include(it) }
-    modImplementation("com.fasterxml.jackson.core:jackson-annotations:2.18.3")!!.let { include(it) }
-    modImplementation("com.fasterxml.jackson.core:jackson-core:2.18.3")!!.let { include(it) }
-    modImplementation("com.fasterxml.jackson.core:jackson-databind:2.18.3")!!.let { include(it) }
-    modImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.18.3")!!.let { include(it) }
-    modImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.3")!!.let { include(it) }
+    // Gemini AI
+    modImplementation(libs.gemini)
+    include(libs.gemini)
+    modImplementation(libs.okhttp)
+    include(libs.okhttp)
+    modImplementation(libs.okio)
+    include(libs.okio)
+    modImplementation(libs.kotlinStdlib)
+    include(libs.kotlinStdlib)
+    modImplementation(libs.kotlinStdlibJdk8)
+    include(libs.kotlinStdlibJdk8)
+    modImplementation(libs.kotlinStdlibJdk7)
+    include(libs.kotlinStdlibJdk7)
+    modImplementation(libs.jacksonAnnotations)
+    include(libs.jacksonAnnotations)
+    modImplementation(libs.jacksonCore)
+    include(libs.jacksonCore)
+    modImplementation(libs.jacksonDatabind)
+    include(libs.jacksonDatabind)
+    modImplementation(libs.jacksonDatatypeJdk8)
+    include(libs.jacksonDatatypeJdk8)
+    modImplementation(libs.jacksonDatatypeJsr310)
+    include(libs.jacksonDatatypeJsr310)
 
     // Testing
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
+    testImplementation(libs.junitApi)
+    testRuntimeOnly(libs.junitEngine)
 }
 
 tasks {
     processResources {
         val propertyMap = mapOf(
             "version" to project.version,
-            "mc_version" to project.property("minecraft_version"),
+            "mc_version" to libs.versions.minecraft.get()
         )
 
         inputs.properties(propertyMap)
