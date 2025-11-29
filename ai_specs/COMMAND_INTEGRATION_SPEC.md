@@ -4,9 +4,9 @@
 
 Add Minecraft chat command support for direct MCP tool invocation and Gemini AI interactions. This phase builds on the completed Gemini integration (Phase 2) and provides users with command-line access to:
 
-1. **Dynamic MCP Tool Commands**: Invoke any connected MCP server's tools via `/server:tool args`
-2. **Gemini Simple Command**: Quick AI queries via `/gemini "prompt"`
-3. **Gemini MCP Command**: AI queries with automatic MCP tool access via `/gemini-mcp "prompt"`
+1. **Dynamic MCP Tool Commands**: Invoke any connected MCP server's tools via `.server:tool args`
+2. **Gemini Simple Command**: Quick AI queries via `.gemini "prompt"`
+3. **Gemini MCP Command**: AI queries with automatic MCP tool access via `.gemini-mcp "prompt"`
 
 **Design Philosophy**: Commands provide an alternative to StarScript expressions, offering:
 - Direct tool execution without StarScript syntax
@@ -20,7 +20,7 @@ Add Minecraft chat command support for direct MCP tool invocation and Gemini AI 
 
 ### 1.1 MCP Tool Commands
 
-**Pattern**: `/server_name:tool_name [arguments]`
+**Pattern**: `.server_name:tool_name [arguments]`
 
 **Rationale**:
 - **Colon separator**: Clear namespace delimiter (inspired by Minecraft's `namespace:id` pattern)
@@ -58,16 +58,16 @@ Add Minecraft chat command support for direct MCP tool invocation and Gemini AI 
 
 ### 1.2 Gemini Simple Command
 
-**Pattern**: `/gemini "prompt"`
+**Pattern**: `.gemini "prompt"`
 
 **Purpose**: Quick AI queries without MCP tool access
 
 **Examples**:
 
 ```bash
-/gemini "What is the capital of France?"
-/gemini "Explain quantum computing in simple terms"
-/gemini "Write a haiku about Minecraft"
+.gemini "What is the capital of France?"
+.gemini "Explain quantum computing in simple terms"
+.gemini "Write a haiku about Minecraft"
 ```
 
 **Behavior**:
@@ -85,7 +85,7 @@ Add Minecraft chat command support for direct MCP tool invocation and Gemini AI 
 
 ### 1.3 Gemini MCP Command
 
-**Pattern**: `/gemini-mcp "prompt"`
+**Pattern**: `.gemini-mcp "prompt"`
 
 **Purpose**: AI queries with automatic access to ALL connected MCP server tools
 
@@ -93,19 +93,19 @@ Add Minecraft chat command support for direct MCP tool invocation and Gemini AI 
 
 ```bash
 # Single tool usage
-/gemini-mcp "What's the weather in Tokyo?"
+.gemini-mcp "What's the weather in Tokyo?"
 # → Gemini calls weather:get_forecast(location="Tokyo")
 # → Returns formatted weather data
 
 # Multi-tool workflow
-/gemini-mcp "If it's sunny in London tomorrow, schedule a picnic at 2pm"
+.gemini-mcp "If it's sunny in London tomorrow, schedule a picnic at 2pm"
 # → Gemini calls weather:get_forecast(location="London", days=1)
 # → Evaluates condition
 # → Calls calendar:schedule_meeting(time="14:00", topic="Picnic")
 # → Returns confirmation message
 
 # Data analysis
-/gemini-mcp "Summarize our sales data from last month"
+.gemini-mcp "Summarize our sales data from last month"
 # → Gemini calls database:query_sales(period="last_month")
 # → Analyzes results
 # → Returns formatted summary
@@ -802,7 +802,7 @@ public void onInitialize() {
 
 **Enhancement**: Add help subcommand for MCP tool commands
 
-**Pattern**: `/server:tool help`
+**Pattern**: `.server:tool help`
 
 **Implementation** (in `MCPToolCommand.build()`):
 
@@ -979,7 +979,7 @@ private static Object coerceValue(String value, JsonNode paramSchema) {
 
 ### 5.3 Gemini API Rate Limiting
 
-**Scenario**: User spams `/gemini` commands, hits API rate limit
+**Scenario**: User spams `.gemini` commands, hits API rate limit
 
 **Handling**: Implement client-side cooldown
 
@@ -1048,13 +1048,13 @@ MeteorExecutor.execute(() -> {
 - [ ] Try running disconnected command (should fail gracefully)
 
 **Gemini Commands**:
-- [ ] Run `/gemini "What is 2+2?"` (simple query)
-- [ ] Run `/gemini` without arguments (should show error)
-- [ ] Run `/gemini` without API key configured (should show config prompt)
-- [ ] Spam `/gemini` commands (verify cooldown works)
+- [ ] Run `.gemini "What is 2+2?"` (simple query)
+- [ ] Run `.gemini` without arguments (should show error)
+- [ ] Run `.gemini` without API key configured (should show config prompt)
+- [ ] Spam `.gemini` commands (verify cooldown works)
 
 **Gemini MCP Commands**:
-- [ ] Connect weather server, run `/gemini-mcp "What's the weather in Tokyo?"`
+- [ ] Connect weather server, run `.gemini-mcp "What's the weather in Tokyo?"`
 - [ ] Verify Gemini calls `weather:get_forecast` automatically
 - [ ] Run with multiple servers connected (weather + calendar)
 - [ ] Run complex prompt requiring multiple tool calls
@@ -1233,15 +1233,15 @@ src/main/java/com/cope/meteormcp/
 ### Gemini Simple Queries
 
 ```bash
-/gemini "What is the capital of France?"
+.gemini "What is the capital of France?"
 > [Gemini] The capital of France is Paris.
 
-/gemini "Explain quantum entanglement"
+.gemini "Explain quantum entanglement"
 > [Gemini] Quantum entanglement is a phenomenon where two or more
 > particles become interconnected in such a way that the state of
 > one particle instantly influences the state of the other...
 
-/gemini "Write a haiku about Minecraft"
+.gemini "Write a haiku about Minecraft"
 > [Gemini] Blocks stack high above
 > Creepers lurk in darkened caves
 > Build and mine, survive
@@ -1253,14 +1253,14 @@ src/main/java/com/cope/meteormcp/
 
 ```bash
 # Single tool call
-/gemini-mcp "What's the weather like in London?"
+.gemini-mcp "What's the weather like in London?"
 > [Gemini MCP] Querying Gemini with 1 MCP servers...
 > [Gemini MCP] The weather in London is currently cloudy with a
 > temperature of 15°C and light rain expected later today.
 > Tools used: weather:get_forecast
 
 # Multi-tool workflow
-/gemini-mcp "Check if it's sunny in Paris tomorrow, and if so, schedule a picnic at 2pm"
+.gemini-mcp "Check if it's sunny in Paris tomorrow, and if so, schedule a picnic at 2pm"
 > [Gemini MCP] Querying Gemini with 2 MCP servers...
 > [Gemini MCP] Good news! The forecast for Paris tomorrow shows sunny
 > weather with temperatures around 22°C. I've scheduled a picnic event
@@ -1268,7 +1268,7 @@ src/main/java/com/cope/meteormcp/
 > Tools used: weather:get_forecast, calendar:schedule_meeting
 
 # Data analysis
-/gemini-mcp "What were our top 3 products by sales last month?"
+.gemini-mcp "What were our top 3 products by sales last month?"
 > [Gemini MCP] Querying Gemini with 1 MCP servers...
 > [Gemini MCP] Based on last month's sales data, your top 3 products were:
 > 1. Widget Pro X - 1,234 units ($61,700)
@@ -1311,9 +1311,9 @@ src/main/java/com/cope/meteormcp/
 
 ### Why Two Gemini Commands Instead of Flags?
 
-**Alternative**: Single `/gemini` command with `--mcp` flag
+**Alternative**: Single `.gemini` command with `--mcp` flag
 
-**Chosen Approach**: Separate `/gemini` and `/gemini-mcp` commands
+**Chosen Approach**: Separate `.gemini` and `.gemini-mcp` commands
 
 **Rationale**:
 - **Simpler UX**: No need to remember flags
@@ -1388,12 +1388,12 @@ Allow users to create shorter aliases for frequently used commands:
 Store recent command executions for quick re-run:
 
 ```bash
-/gemini-history
+.gemini-history
 > Recent queries:
 > 1. "What's the weather in Tokyo?"
 > 2. "Schedule a meeting at 2pm"
 
-/gemini-rerun 1  # Re-execute query #1
+.gemini-rerun 1  # Re-execute query #1
 ```
 
 ---
@@ -1414,7 +1414,7 @@ Store command results for later use:
 
 ```bash
 /weather:get_forecast "London" --save weather_data
-/gemini-mcp "Analyze this weather data: ${weather_data}"
+.gemini-mcp "Analyze this weather data: ${weather_data}"
 ```
 
 ---
@@ -1433,7 +1433,7 @@ Add new section after Gemini integration:
 After connecting an MCP server, its tools become available as commands:
 
 #### Syntax
-/server_name:tool_name [arguments]
+.server_name:tool_name [arguments]
 
 #### Examples
 # Positional arguments
@@ -1448,10 +1448,10 @@ After connecting an MCP server, its tools become available as commands:
 ### Gemini Commands
 
 #### Simple Queries (No MCP Tools)
-/gemini "What is the capital of France?"
+.gemini "What is the capital of France?"
 
 #### MCP-Enhanced Queries (Automatic Tool Access)
-/gemini-mcp "What's the weather in Tokyo?"
+.gemini-mcp "What's the weather in Tokyo?"
 
 # Gemini automatically uses ALL connected MCP servers
 # to answer your query intelligently
@@ -1460,7 +1460,7 @@ After connecting an MCP server, its tools become available as commands:
 
 - **Dynamic Registration**: Commands appear/disappear as servers connect/disconnect
 - **Autocomplete**: Tab-completion for command names and parameters
-- **Help System**: `/command help` shows usage and parameter details
+- **Help System**: `.command help` shows usage and parameter details
 - **Async Execution**: Gemini commands run in background, don't block chat
 - **Error Handling**: Clear error messages with suggested fixes
 
@@ -1484,11 +1484,11 @@ Add to features section:
 - ✅ **MCP Server Management**: Connect, configure, and monitor MCP servers via GUI
 - ✅ **StarScript Integration**: Use MCP tools in expressions `{server.tool()}`
 - ✅ **Gemini AI Integration**: Intelligent prompts with `{gemini()}` and `{gemini_mcp()}`
-- ✅ **Command System**: Direct tool execution via `/server:tool` commands
-- ✅ **Gemini Commands**: Quick AI queries via `/gemini` and `/gemini-mcp`
+- ✅ **Command System**: Direct tool execution via `.server:tool` commands
+- ✅ **Gemini Commands**: Quick AI queries via `.gemini` and `.gemini-mcp`
 - ✅ **Dynamic Registration**: Commands auto-register when servers connect
 - ✅ **Autocomplete**: Tab-completion for commands and parameters
-- ✅ **Help System**: Inline help with `/command help`
+- ✅ **Help System**: Inline help with `.command help`
 
 ## Usage Examples
 
@@ -1502,10 +1502,10 @@ Add to features section:
 ### AI-Powered Queries
 ```bash
 # Simple query
-/gemini "Explain quantum physics"
+.gemini "Explain quantum physics"
 
 # Query with MCP tool access (automatic)
-/gemini-mcp "Check weather in London and schedule picnic if sunny"
+.gemini-mcp "Check weather in London and schedule picnic if sunny"
 ```
 
 ### StarScript Integration
@@ -1527,8 +1527,8 @@ This specification provides a complete blueprint for adding command system integ
 
 ✅ **Dynamic Command Registration**: Commands auto-register/unregister with server state
 ✅ **Flexible Argument Parsing**: Supports positional, named, and JSON arguments
-✅ **User-Friendly Syntax**: `/server:tool` pattern inspired by Minecraft conventions
-✅ **Gemini Command Access**: Both simple (`/gemini`) and enhanced (`/gemini-mcp`) modes
+✅ **User-Friendly Syntax**: `.server:tool` pattern inspired by Minecraft conventions
+✅ **Gemini Command Access**: Both simple (`.gemini`) and enhanced (`.gemini-mcp`) modes
 ✅ **Async Execution**: Non-blocking API calls for responsive UI
 ✅ **Help System**: Inline help with parameter details
 ✅ **Robust Error Handling**: Graceful failures with clear messages

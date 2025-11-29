@@ -28,11 +28,11 @@
     </tr>
     <tr>
       <td><strong>Dynamic Chat Commands</strong></td>
-      <td>Automatically registered <code>/serverName:toolName</code> commands with help and tab completion</td>
+      <td>Automatically registered <code>.serverName:toolName</code> commands with help and tab completion</td>
     </tr>
     <tr>
       <td><strong>Gemini AI (Optional)</strong></td>
-      <td>Direct requests with <code>/gemini</code> or MCP-enhanced requests with <code>/gemini-mcp</code></td>
+      <td>Direct requests with <code>.gemini</code> or MCP-enhanced requests with <code>.gemini-mcp</code></td>
     </tr>
   </table>
 
@@ -79,7 +79,7 @@
 
   <table>
     <tr><td><code># Time queries</code></td></tr>
-    <tr><td><code>/time:get_current_time timezone="UTC"</code></td></tr>
+    <tr><td><code>.time:get_current_time timezone="UTC"</code></td></tr>
   </table>
 
   <h2>Gemini AI Integration (Optional)</h2>
@@ -97,11 +97,11 @@
 
   <table>
     <tr><td><strong>Simple prompts:</strong></td></tr>
-    <tr><td><code>/gemini "Explain what StarScript is"</code></td></tr>
+    <tr><td><code>.gemini "Explain what StarScript is"</code></td></tr>
     <tr><td><code>{gemini("What is the current Minecraft version?")}</code></td></tr>
     <tr><td><strong>MCP-enhanced prompts:</strong></td></tr>
-    <tr><td><code>/gemini-mcp "Read my config.json and explain each setting"</code></td></tr>
+    <tr><td><code>.gemini-mcp "Read my config.json and explain each setting"</code></td></tr>
     <tr><td><code>{gemini_mcp("Get the current time in Tokyo")}</code></td></tr>
-    <tr><td>The <code>/gemini-mcp</code> command allows Gemini to automatically discover and call any connected MCP tool. Tool usage is reported in the response.</td></tr>
+    <tr><td>The <code>.gemini-mcp</code> command allows Gemini to automatically discover and call any connected MCP tool. Tool usage is reported in the response.</td></tr>
   </table>
 </div>

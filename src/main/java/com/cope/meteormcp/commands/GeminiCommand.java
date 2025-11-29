@@ -30,14 +30,14 @@ public class GeminiCommand extends Command {
         );
 
         builder.executes(context -> {
-            error("Prompt is required. Usage: /gemini \"prompt\"");
+            error("Prompt is required. Usage: .gemini \"prompt\"");
             return 0;
         });
     }
 
     int executeGemini(String prompt) {
         if (prompt == null || prompt.isBlank()) {
-            error("Prompt is required. Usage: /gemini \"prompt\"");
+            error("Prompt is required. Usage: .gemini \"prompt\"");
             return 0;
         }
 

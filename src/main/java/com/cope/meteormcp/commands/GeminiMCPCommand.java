@@ -33,14 +33,14 @@ public class GeminiMCPCommand extends Command {
         );
 
         builder.executes(context -> {
-            error("Prompt is required. Usage: /gemini-mcp \"prompt\"");
+            error("Prompt is required. Usage: .gemini-mcp \"prompt\"");
             return 0;
         });
     }
 
     private int executeGeminiMCP(String prompt) {
         if (prompt == null || prompt.isBlank()) {
-            error("Prompt is required. Usage: /gemini-mcp \"prompt\"");
+            error("Prompt is required. Usage: .gemini-mcp \"prompt\"");
             return 0;
         }
 

@@ -7,7 +7,7 @@
 **Core Purpose:**
 1.  **Connect:** Link Minecraft to external MCP servers (local or remote).
 2.  **Expose:** Make MCP tools available as StarScript functions (`{server.tool()}`).
-3.  **Automate:** Use Gemini AI to intelligently orchestrate these tools via natural language (`/gemini-mcp`).
+3.  **Automate:** Use Gemini AI to intelligently orchestrate these tools via natural language (`.gemini-mcp`).
 
 ## 2. Architecture & Data Flow
 
@@ -42,9 +42,9 @@ graph TD
     MTE -->|Direct Call| MCPServer
 ```
 
-### 2.2 The "Enhanced" Gemini Flow (`/gemini-mcp`)
+### 2.2 The "Enhanced" Gemini Flow (`.gemini-mcp`)
 
-When a user executes `/gemini-mcp "Get weather in Tokyo"`, the following sequence occurs in `GeminiExecutor`:
+When a user executes `.gemini-mcp "Get weather in Tokyo"`, the following sequence occurs in `GeminiExecutor`:
 
 1.  **Tool Collection:** The system retrieves all connected MCP servers and converts their tools into Gemini-compatible `FunctionDeclaration` objects using `MCPToGeminiBridge`.
 2.  **Initial Request:** The prompt and tool definitions are sent to the Gemini API.
@@ -103,9 +103,9 @@ Once connected, tools are available globally:
 *   `{weather.get_forecast("London", 3)}`
 
 ### 4.3 Chat Commands
-*   `/gemini "Explain quantum physics"` (Simple text)
-*   `/gemini-mcp "Check the weather in London and tell me if I need an umbrella"` (Uses connected tools)
-*   `/time:get_current_time timezone="UTC"` (Auto-generated command for specific tool)
+*   `.gemini "Explain quantum physics"` (Simple text)
+*   `.gemini-mcp "Check the weather in London and tell me if I need an umbrella"` (Uses connected tools)
+*   `.time:get_current_time timezone="UTC"` (Auto-generated command for specific tool)
 
 ## 5. Development
 
