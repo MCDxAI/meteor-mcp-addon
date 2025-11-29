@@ -179,6 +179,9 @@ public class MCPServers extends System<MCPServers> {
         if (connection != null) {
             connection.disconnect();
 
+            // Clear async results for this server to free memory
+            com.cope.meteormcp.starscript.MCPToolExecutor.clearAsyncResultsForServer(name);
+
             // Unregister from StarScript
             Runnable cleanup = () -> {
                 MeteorMCPAddon.unregisterServerFromStarScript(name);

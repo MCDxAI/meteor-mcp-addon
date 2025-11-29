@@ -15,10 +15,25 @@ This is a **Meteor Client addon** that bridges the **Model Context Protocol (MCP
 
 - ✅ **MCP Integration**: Full STDIO transport support with server management, tool discovery, and execution
 - ✅ **StarScript Integration**: Dynamic tool registration, argument conversion, result handling
+- ✅ **Async Execution**: Zero-blocking MCP calls via background threads (60+ FPS guaranteed)
 - ✅ **Gemini AI Integration**: Multi-turn conversations with automatic MCP tool calling
 - ✅ **Chat Commands**: Dynamic `/server:tool`, `/gemini`, and `/gemini-mcp` with help system
 - ✅ **GUI System**: Complete configuration screens for servers, tools, and Gemini settings
 - ✅ **Persistence**: NBT-based storage for all configurations
+
+### Performance Characteristics
+
+**Asynchronous Execution Model**:
+- All MCP tool calls execute on background threads via `MeteorExecutor`
+- HUD elements **never block** the render thread, regardless of MCP response time
+- Multiple HUD modules can call different MCP tools concurrently without FPS impact
+- Results update in real-time (typically next HUD tick after fetch completes)
+
+**Memory Management**:
+- Each unique tool call (server + tool + args) maintains one cached result
+- Results auto-cleared when servers disconnect
+- Thread-safe `ConcurrentHashMap` prevents race conditions
+- No memory leaks from abandoned tasks
 
 ### Future Enhancements
 - 🔄 **SSE/HTTP Transport**: Additional transport types for MCP servers (currently STDIO only)
@@ -78,18 +93,22 @@ MeteorMCPAddon (Entry Point)
     ├─ Tabs.add(MCPTab)             # GUI registration
     └─ MeteorStarscript.ss.set()    # Global tool registration
 
-StarScript Expression Flow:
+StarScript Expression Flow (Asynchronous):
 {serverName.toolName(arg1, arg2)}
     ↓
 MCPToolExecutor.execute()
-    ↓
-MCPValueConverter (StarScript ↔ JSON)
-    ↓
-MCPServerConnection.callTool()
-    ↓
-MCP Java SDK (STDIO Transport)
-    ↓
-External MCP Server Process
+    ├─ Returns last known result immediately (non-blocking)
+    └─ Spawns async task via MeteorExecutor if not already running
+        ↓
+        MCPValueConverter (StarScript ↔ JSON)
+        ↓
+        MCPServerConnection.callTool() [blocking, but off render thread]
+        ↓
+        MCP Java SDK (STDIO Transport)
+        ↓
+        External MCP Server Process
+        ↓
+        Updates cached result for next HUD tick
 ```
 
 ### Source Layout (`src/main/java/com/cope/meteormcp/`)
@@ -131,11 +150,20 @@ External MCP Server Process
 `MCPServers` mirrors StarScript registration by adding/removing `MCPToolCommand` instances whenever servers connect or disconnect, refreshing the Brigadier dispatcher to keep the chat tree accurate.
 
 #### StarScript Integration (`starscript/`)
-- **`MCPToolExecutor.java`**: Bridges StarScript function calls to MCP
+- **`MCPToolExecutor.java`**: Bridges StarScript function calls to MCP (asynchronous)
   - `createToolFunction()`: Returns `Value.function()` wrapping MCP tool
-  - `execute()`: Extracts args from StarScript stack, calls MCP, converts result
+  - `execute()`: Asynchronously executes MCP tools without blocking render thread
+    - Returns last known result immediately (or "Loading..." on first call)
+    - Spawns background task via `MeteorExecutor` to fetch fresh data
+    - Updates result cache when task completes
+  - `clearAsyncResults()`: Clears all cached results (memory management)
+  - `clearAsyncResultsForServer()`: Clears results for a specific server on disconnect
   - `generateExampleSyntax()`: Generates `{server.tool(args)}` snippets for GUI
   - Schema introspection: `getParameterNames()`, `getRequiredParameters()`, `getParameterType()`
+
+- **`MCPAsyncResult.java`**: Thread-safe holder for async tool call state
+  - Stores last known result and task-in-progress flag
+  - Ensures only one background fetch runs at a time per unique call
 
 - **`MCPValueConverter.java`**: Bidirectional StarScript ↔ JSON conversion
   - `toJson(Value)`: Converts StarScript types (bool, number, string, map) to JSON
@@ -170,15 +198,20 @@ MeteorStarscript.ss.set("serverName", serverMap);
 // Now usable anywhere: {serverName.toolName(args)}
 ```
 
-#### MCP Tool Execution Flow
+#### MCP Tool Execution Flow (Asynchronous)
 1. User types `{weather.get_forecast(x, z)}` in HUD element
 2. StarScript evaluates expression, calls registered function
 3. `MCPToolExecutor.execute()` extracts args from stack
-4. `MCPValueConverter.toJson()` converts StarScript values to JSON
-5. `MCPServerConnection.callTool()` sends request to MCP server
-6. Server executes tool, returns `CallToolResult`
-7. `MCPValueConverter.toValue()` converts result to StarScript string
-8. Result displays in HUD
+4. Check if result is cached:
+   - **If cached**: Return last result immediately + spawn background refresh task
+   - **If not cached**: Return "Loading..." + spawn background fetch task
+5. Background task (off render thread):
+   - `MCPValueConverter.toJson()` converts StarScript values to JSON
+   - `MCPServerConnection.callTool()` sends request to MCP server
+   - Server executes tool, returns `CallToolResult`
+   - `MCPValueConverter.toValue()` converts result to StarScript string
+   - Update cached result
+6. Next HUD tick displays updated result (real-time data, zero blocking)
 
 ## MCP Server Configuration
 

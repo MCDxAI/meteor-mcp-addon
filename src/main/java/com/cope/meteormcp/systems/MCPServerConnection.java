@@ -20,6 +20,9 @@ import io.modelcontextprotocol.json.McpJsonMapper;
 /**
  * Wrapper around MCP Java SDK Client.
  * Manages connection lifecycle and provides tool execution interface.
+ * <p>
+ * All tool calls are routed through a sequential request queue to prevent
+ * concurrent access issues with the MCP sync client.
  *
  * @author GhostTypes
  */
@@ -27,6 +30,7 @@ public class MCPServerConnection {
     private final MCPServerConfig config;
     private McpSyncClient client;
     private McpClientTransport transport;
+    private MCPRequestQueue requestQueue;
     private boolean connected;
     private List<Tool> tools;
     private long lastConnectAttempt;
@@ -148,6 +152,9 @@ public class MCPServerConnection {
             ListToolsResult result = client.listTools();
             tools = new ArrayList<>(result.tools());
 
+            // Create request queue with worker thread
+            requestQueue = new MCPRequestQueue(config.getName(), client);
+
             connected = true;
             MeteorMCPAddon.LOG.info("Connected to MCP server: {} ({} tools available)",
                 config.getName(), tools.size());
@@ -168,6 +175,12 @@ public class MCPServerConnection {
         connected = false;
         tools = new ArrayList<>();
 
+        // Shutdown request queue first (drains pending requests)
+        if (requestQueue != null) {
+            requestQueue.shutdown();
+            requestQueue = null;
+        }
+
         if (client != null) {
             try {
                 client.closeGracefully();
@@ -183,24 +196,42 @@ public class MCPServerConnection {
     }
 
     /**
-     * Execute a tool on the connected MCP server.
+     * Execute a tool on the connected MCP server asynchronously via the request queue.
+     * <p>
+     * This method submits the request to a sequential queue and blocks until the result
+     * is available. The queue ensures only one tool executes at a time, preventing
+     * "Failed to enqueue message" errors from concurrent access.
      *
      * @param toolName  identifier returned from {@link #getTools()}
      * @param arguments JSON-serializable argument payload
      * @return structured call result reported by the server
+     * @throws IllegalStateException if not connected
+     * @throws RuntimeException if tool execution fails
      */
     public CallToolResult callTool(String toolName, Map<String, Object> arguments) {
-        if (!connected || client == null) {
+        if (!connected || requestQueue == null || !requestQueue.isRunning()) {
             throw new IllegalStateException("Not connected to MCP server");
         }
 
         try {
-            CallToolRequest request = new CallToolRequest(toolName, arguments);
-            return client.callTool(request);
-        } catch (Exception e) {
+            // Create a future to receive the result
+            java.util.concurrent.CompletableFuture<CallToolResult> future =
+                new java.util.concurrent.CompletableFuture<>();
+
+            // Submit request to queue
+            ToolRequest request = new ToolRequest(toolName, arguments, future);
+            requestQueue.submitRequest(request);
+
+            // Block until result is available (but this is off the render thread)
+            return future.get();
+
+        } catch (java.util.concurrent.ExecutionException e) {
             MeteorMCPAddon.LOG.error("Error calling tool {} on server {}: {}",
-                toolName, config.getName(), e.getMessage());
-            throw new RuntimeException("Tool call failed", e);
+                toolName, config.getName(), e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
+            throw new RuntimeException("Tool call failed", e.getCause() != null ? e.getCause() : e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Tool call interrupted", e);
         }
     }
 
@@ -219,6 +250,7 @@ public class MCPServerConnection {
     public MCPServerConfig getConfig() { return config; }
     public boolean isConnected() { return connected; }
     public List<Tool> getTools() { return new ArrayList<>(tools); }
+    public MCPRequestQueue getRequestQueue() { return requestQueue; }
 
     /**
      * Look up a tool that was advertised by the remote server.

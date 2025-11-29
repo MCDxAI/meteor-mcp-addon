@@ -5,27 +5,37 @@ import com.cope.meteormcp.systems.MCPServerConnection;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.JsonSchema;
 import io.modelcontextprotocol.spec.McpSchema.Tool;
+import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
 import org.meteordev.starscript.Starscript;
 import org.meteordev.starscript.value.Value;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Executes MCP tools from StarScript function calls.
  * Bridges between StarScript syntax and MCP tool execution.
+ * <p>
+ * All MCP tool calls are executed asynchronously to prevent blocking the render thread.
+ * Results are stored and returned immediately on subsequent calls.
  *
  * @author GhostTypes
  */
 public class MCPToolExecutor {
+    private static final Map<String, MCPAsyncResult> asyncResults = new ConcurrentHashMap<>();
 
     /**
-     * Execute an MCP tool from StarScript
+     * Execute an MCP tool from StarScript asynchronously.
+     * <p>
+     * On first call, returns "Loading..." and starts a background fetch.
+     * On subsequent calls, returns the last known result and triggers a fresh fetch in the background.
+     * This ensures the HUD always shows real-time data without blocking the render thread.
      *
      * @param ss StarScript instance
      * @param argCount Number of arguments on stack
      * @param connection MCP server connection
      * @param tool Tool to execute
-     * @return Result as StarScript Value
+     * @return Result as StarScript Value (last known result or "Loading...")
      */
     public static Value execute(
         Starscript ss,
@@ -38,23 +48,89 @@ public class MCPToolExecutor {
             if (!connection.isConnected()) {
                 MeteorMCPAddon.LOG.warn("Attempted to call tool {} on disconnected server {}",
                     tool.name(), connection.getConfig().getName());
-                return Value.null_();
+                return Value.string("Error: Server disconnected");
             }
 
             // Extract arguments from StarScript stack
             Map<String, Object> args = extractArguments(ss, argCount, tool);
 
-            // Execute MCP tool
-            CallToolResult result = connection.callTool(tool.name(), args);
+            // Generate unique key for this exact call (server + tool + args)
+            String cacheKey = generateCacheKey(connection.getConfig().getName(), tool.name(), args);
 
-            // Convert result to StarScript Value
-            return MCPValueConverter.toValue(result);
+            // Get or create async result holder
+            MCPAsyncResult asyncResult = asyncResults.computeIfAbsent(cacheKey, k -> new MCPAsyncResult());
+
+            // If no task is currently running, start a new background fetch
+            if (asyncResult.tryStartTask()) {
+                MeteorExecutor.execute(() -> {
+                    try {
+                        // This blocking call happens off the render thread
+                        CallToolResult result = connection.callTool(tool.name(), args);
+                        String resultString = MCPValueConverter.toValue(result).toString();
+                        asyncResult.setLastResult(resultString);
+                    } catch (Exception e) {
+                        MeteorMCPAddon.LOG.error("Async MCP tool execution failed for {} on {}: {}",
+                            tool.name(), connection.getConfig().getName(), e.getMessage());
+                        asyncResult.setLastResult("Error: " + e.getMessage());
+                    } finally {
+                        asyncResult.completeTask();
+                    }
+                });
+            }
+
+            // Return the last known result immediately (non-blocking)
+            return Value.string(asyncResult.getLastResult());
 
         } catch (Exception e) {
             MeteorMCPAddon.LOG.error("Error executing MCP tool {} on server {}: {}",
                 tool.name(), connection.getConfig().getName(), e.getMessage());
-            return Value.null_();
+            return Value.string("Error: " + e.getMessage());
         }
+    }
+
+    /**
+     * Generate a unique cache key for a tool call.
+     *
+     * @param serverName MCP server name
+     * @param toolName tool name
+     * @param args tool arguments
+     * @return unique key string
+     */
+    private static String generateCacheKey(String serverName, String toolName, Map<String, Object> args) {
+        // Simple key format: server.tool(arg1=val1,arg2=val2)
+        StringBuilder key = new StringBuilder();
+        key.append(serverName).append(".").append(toolName).append("(");
+
+        if (args != null && !args.isEmpty()) {
+            List<String> sortedKeys = new ArrayList<>(args.keySet());
+            Collections.sort(sortedKeys); // Ensure consistent ordering
+
+            for (int i = 0; i < sortedKeys.size(); i++) {
+                String argKey = sortedKeys.get(i);
+                Object argValue = args.get(argKey);
+                if (i > 0) key.append(",");
+                key.append(argKey).append("=").append(argValue);
+            }
+        }
+
+        key.append(")");
+        return key.toString();
+    }
+
+    /**
+     * Clear all cached async results. Useful when servers disconnect or reconnect.
+     */
+    public static void clearAsyncResults() {
+        asyncResults.clear();
+    }
+
+    /**
+     * Clear async results for a specific server.
+     *
+     * @param serverName the server name to clear results for
+     */
+    public static void clearAsyncResultsForServer(String serverName) {
+        asyncResults.keySet().removeIf(key -> key.startsWith(serverName + "."));
     }
 
     /**
