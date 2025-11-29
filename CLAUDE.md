@@ -17,7 +17,7 @@ This is a **Meteor Client addon** that bridges the **Model Context Protocol (MCP
 - ✅ **StarScript Integration**: Dynamic tool registration, argument conversion, result handling
 - ✅ **Async Execution**: Zero-blocking MCP calls via background threads (60+ FPS guaranteed)
 - ✅ **Gemini AI Integration**: Multi-turn conversations with automatic MCP tool calling
-- ✅ **Chat Commands**: Dynamic `/server:tool`, `/gemini`, and `/gemini-mcp` with help system
+- ✅ **Chat Commands**: Dynamic `.server:tool`, `.gemini`, and `.gemini-mcp` with help system
 - ✅ **GUI System**: Complete configuration screens for servers, tools, and Gemini settings
 - ✅ **Persistence**: NBT-based storage for all configurations
 
@@ -143,9 +143,9 @@ MCPToolExecutor.execute()
 
 #### Command Integration (`commands/`)
 - **`CommandUtils.java`**: Shared key=value/JSON parser plus chat output helpers for tool results
-- **`MCPToolCommand.java`**: Dynamic Brigadier command per MCP tool (`/server:tool …`) with help + suggestions
-- **`GeminiCommand.java`**: `/gemini "prompt"` chat command with async execution and per-player cooldown
-- **`GeminiMCPCommand.java`**: `/gemini-mcp "prompt"` with automatic MCP tool discovery and usage reporting
+- **`MCPToolCommand.java`**: Dynamic Brigadier command per MCP tool (`.server:tool …`) with help + suggestions
+- **`GeminiCommand.java`**: `.gemini "prompt"` chat command with async execution and per-player cooldown
+- **`GeminiMCPCommand.java`**: `.gemini-mcp "prompt"` with automatic MCP tool discovery and usage reporting
 
 `MCPServers` mirrors StarScript registration by adding/removing `MCPToolCommand` instances whenever servers connect or disconnect, refreshing the Brigadier dispatcher to keep the chat tree accurate.
 
