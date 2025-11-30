@@ -44,12 +44,13 @@
     <tr><td><strong>Via GUI:</strong></td></tr>
     <tr><td>1. Open Meteor GUI (Right Shift) and navigate to the MCP tab</td></tr>
     <tr><td>2. Click "Add Server"</td></tr>
-    <tr><td>3. Enter server name and command (e.g., <code>npx -y @modelcontextprotocol/server-time</code>)</td></tr>
+    <tr><td>3. Enter server name and command (e.g., <code>node /path/to/spotify-mcp-server/dist/index.js</code>)</td></tr>
     <tr><td>4. Enable "Auto Connect" (optional)</td></tr>
     <tr><td>5. Save and Connect</td></tr>
   </table>
 
-  <p><strong>Common MCP Servers:</strong></p>
+  <p><strong>Example Server: Spotify MCP</strong></p>
+  <p>For a practical example, we recommend the <a href="https://github.com/LLMTooling/spotify-mcp-server">Spotify MCP Server</a> (requires local setup).</p>
 
   <table>
     <tr>
@@ -58,9 +59,9 @@
       <th>Use Case</th>
     </tr>
     <tr>
-      <td>Time</td>
-      <td><code>npx -y @modelcontextprotocol/server-time</code></td>
-      <td>Time zone conversion, current time</td>
+      <td>Spotify</td>
+      <td><code>node .../dist/index.js</code></td>
+      <td>Control playback, view track info</td>
     </tr>
   </table>
 
@@ -68,7 +69,8 @@
 
   <table>
     <tr><td>After connecting servers, tools become available in any StarScript context:</td></tr>
-    <tr><td><code>{time.get_current_time("America/New_York")}</code></td></tr>
+    <tr><td><code>{spotify.spotify_get_track_name()}</code></td></tr>
+    <tr><td><code>{spotify.spotify_get_track_progress_formatted()}</code></td></tr>
     <tr><td>Use these expressions in:</td></tr>
     <tr><td>- HUD text elements</td></tr>
     <tr><td>- Chat macros</td></tr>
@@ -78,8 +80,9 @@
   <h3>Chat Command Examples</h3>
 
   <table>
-    <tr><td><code># Time queries</code></td></tr>
-    <tr><td><code>.time:get_current_time timezone="UTC"</code></td></tr>
+    <tr><td><code># Control playback</code></td></tr>
+    <tr><td><code>.spotify:spotify_next</code></td></tr>
+    <tr><td><code>.spotify:spotify_set_volume volume_percent=50</code></td></tr>
   </table>
 
   <h2>Gemini AI Integration (Optional)</h2>
@@ -100,8 +103,8 @@
     <tr><td><code>.gemini "Explain what StarScript is"</code></td></tr>
     <tr><td><code>{gemini("What is the current Minecraft version?")}</code></td></tr>
     <tr><td><strong>MCP-enhanced prompts:</strong></td></tr>
-    <tr><td><code>.gemini-mcp "Read my config.json and explain each setting"</code></td></tr>
-    <tr><td><code>{gemini_mcp("Get the current time in Tokyo")}</code></td></tr>
+    <tr><td><code>.gemini-mcp "Play some jazz music"</code></td></tr>
+    <tr><td><code>{gemini_mcp("What song is currently playing?")}</code></td></tr>
     <tr><td>The <code>.gemini-mcp</code> command allows Gemini to automatically discover and call any connected MCP tool. Tool usage is reported in the response.</td></tr>
   </table>
 </div>
