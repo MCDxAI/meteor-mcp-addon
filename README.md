@@ -3,12 +3,17 @@
   <p><strong>Model Context Protocol & Gemini integration for Meteor Client</strong></p>
 
   <p>
-    <img src="https://img.shields.io/badge/Minecraft-1.21.10-green?style=for-the-badge" alt="Minecraft">
-    <img src="https://img.shields.io/badge/Fabric-0.17.3-blue?style=for-the-badge" alt="Fabric">
-    <img src="https://img.shields.io/badge/Meteor_Client-1.21.10--32-blueviolet?style=for-the-badge" alt="Meteor Client">
-    <img src="https://img.shields.io/badge/Java-21-orange?style=for-the-badge" alt="Java">
-    <img src="https://img.shields.io/badge/MCP-0.14.1-red?style=for-the-badge" alt="MCP">
+    <img src="https://img.shields.io/badge/Meteor_Client-Latest-8a11b6?style=flat" alt="Meteor Client">    
+    <img src="https://img.shields.io/badge/Minecraft-1.21.10-00800f?style=flat" alt="Minecraft">
+    <img src="https://img.shields.io/badge/Fabric-0.17.3-3d5dff?style=flat" alt="Fabric">
+    <img src="https://img.shields.io/badge/Java-21-e28655?style=flat" alt="Java">
   </p>
+
+<p>
+    <img src="https://img.shields.io/badge/modelcontextprotocol/java--sdk-0.14.1-e28655?style=flat" alt="MCP">
+    <img src="https://img.shields.io/badge/googleapis/java--genai-1.21.0-e28655?style=flat" alt="Gemini">
+</p>
+
 
   <p>A Meteor Client addon that bridges the Model Context Protocol (MCP) with Minecraft. Connect to MCP servers and call their tools directly from StarScript expressions, chat commands, and optionally via Gemini AI.</p>
 
@@ -50,7 +55,7 @@
   </table>
 
   <p><strong>Example Server: Spotify MCP</strong></p>
-  <p>For a practical example, we recommend the <a href="https://github.com/LLMTooling/spotify-mcp-server">Spotify MCP Server</a> (requires local setup).</p>
+  <p>For a practical example, see <a href="https://github.com/LLMTooling/spotify-mcp-server">Spotify MCP Server</a> (requires local setup).</p>
 
   <table>
     <tr>
