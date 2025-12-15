@@ -76,6 +76,7 @@ dependencies {
     // Testing
     testImplementation(libs.junitApi)
     testRuntimeOnly(libs.junitEngine)
+    testRuntimeOnly(libs.junitPlatformLauncher)
 }
 
 tasks {
