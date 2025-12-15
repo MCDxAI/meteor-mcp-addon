@@ -20,7 +20,8 @@
       "Bash(.gradlew.bat clean build)",
       "Bash(./gradlew clean build:*)",
       "WebFetch(domain:github.com)",
-      "Bash(./gradlew.bat clean:*)"
+      "Bash(./gradlew.bat clean:*)",
+      "Skill(repo-sweep)"
     ],
     "deny": [],
     "ask": []

@@ -5,11 +5,11 @@
   "name": "Meteor MCP",
   "description": "MCP (Model Context Protocol) integration for Meteor Client - Execute MCP tools via StarScript",
   "authors": [
-    "Cope"
+    "GhostTypes"
   ],
   "contact": {
-    "homepage": "https://github.com/cope/meteor-mcp",
-    "sources": "https://github.com/cope/meteor-mcp"
+    "homepage": "https://github.com/MCDxAI/meteor-mcp-addon",
+    "sources": "https://github.com/MCDxAI/meteor-mcp-addon"
   },
   "icon": "assets/meteor-mcp/icon.png",
   "environment": "client",

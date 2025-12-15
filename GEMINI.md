@@ -111,7 +111,7 @@ Once connected, tools are available globally:
 
 ### 5.1 Setup
 ```bash
-git clone https://github.com/cope/meteor-mcp-addon
+git clone https://github.com/MCDxAI/meteor-mcp-addon
 cd meteor-mcp-addon
 ./gradlew build
 ```
