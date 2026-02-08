@@ -1,5 +1,14 @@
+import org.gradle.api.artifacts.MinimalExternalModuleDependency
+import org.gradle.api.artifacts.dsl.DependencyHandler
+import org.gradle.api.provider.Provider
+
 plugins {
     alias(libs.plugins.fabric.loom)
+}
+
+fun DependencyHandler.modInclude(dependencyProvider: Provider<out MinimalExternalModuleDependency>) {
+    modImplementation(dependencyProvider)
+    include(dependencyProvider)
 }
 
 base {
@@ -33,45 +42,27 @@ dependencies {
     implementation(libs.starscript)
 
     // MCP SDK
-    modImplementation(libs.mcp)
-    include(libs.mcp)
-    modImplementation(libs.mcpCore)
-    include(libs.mcpCore)
-    modImplementation(libs.mcpJson)
-    include(libs.mcpJson)
-    modImplementation(libs.mcpJsonJackson2)
-    include(libs.mcpJsonJackson2)
+    modInclude(libs.mcp)
+    modInclude(libs.mcpCore)
+    modInclude(libs.mcpJson)
+    modInclude(libs.mcpJsonJackson2)
 
-    modImplementation(libs.reactiveStreams)
-    include(libs.reactiveStreams)
-    modImplementation(libs.reactorCore)
-    include(libs.reactorCore)
-    modImplementation(libs.jsonSchemaValidator)
-    include(libs.jsonSchemaValidator)
+    modInclude(libs.reactiveStreams)
+    modInclude(libs.reactorCore)
+    modInclude(libs.jsonSchemaValidator)
 
     // Gemini AI
-    modImplementation(libs.gemini)
-    include(libs.gemini)
-    modImplementation(libs.okhttp)
-    include(libs.okhttp)
-    modImplementation(libs.okio)
-    include(libs.okio)
-    modImplementation(libs.kotlinStdlib)
-    include(libs.kotlinStdlib)
-    modImplementation(libs.kotlinStdlibJdk8)
-    include(libs.kotlinStdlibJdk8)
-    modImplementation(libs.kotlinStdlibJdk7)
-    include(libs.kotlinStdlibJdk7)
-    modImplementation(libs.jacksonAnnotations)
-    include(libs.jacksonAnnotations)
-    modImplementation(libs.jacksonCore)
-    include(libs.jacksonCore)
-    modImplementation(libs.jacksonDatabind)
-    include(libs.jacksonDatabind)
-    modImplementation(libs.jacksonDatatypeJdk8)
-    include(libs.jacksonDatatypeJdk8)
-    modImplementation(libs.jacksonDatatypeJsr310)
-    include(libs.jacksonDatatypeJsr310)
+    modInclude(libs.gemini)
+    modInclude(libs.okhttp)
+    modInclude(libs.okio)
+    modInclude(libs.kotlinStdlib)
+    modInclude(libs.kotlinStdlibJdk8)
+    modInclude(libs.kotlinStdlibJdk7)
+    modInclude(libs.jacksonAnnotations)
+    modInclude(libs.jacksonCore)
+    modInclude(libs.jacksonDatabind)
+    modInclude(libs.jacksonDatatypeJdk8)
+    modInclude(libs.jacksonDatatypeJsr310)
 
     // Testing
     testImplementation(libs.junitApi)
