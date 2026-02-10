@@ -1,6 +1,6 @@
 package com.cope.meteormcp.gui.screens;
 
-import com.cope.meteormcp.systems.GeminiConfig;
+import com.cope.meteormcp.systems.AIConfig;
 import com.cope.meteormcp.systems.MCPServerConfig;
 import com.cope.meteormcp.systems.MCPServerConnection;
 import com.cope.meteormcp.systems.MCPServers;
@@ -35,26 +35,19 @@ public class MCPServersScreen extends WindowTabScreen {
 
         add(theme.horizontalSeparator()).expandX();
 
-        // Gemini Settings Section
-        add(theme.label("Gemini API Settings")).expandX();
+        // AI Settings Section
+        add(theme.label("AI Settings")).expandX();
 
-        WHorizontalList geminiRow = add(theme.horizontalList()).expandX().widget();
+        WHorizontalList aiRow = add(theme.horizontalList()).expandX().widget();
 
-        WButton geminiSettingsBtn = geminiRow.add(theme.button("Configure Gemini API")).expandX().widget();
-        geminiSettingsBtn.action = () -> mc.setScreen(new GeminiSettingsScreen(theme, this));
+        WButton aiSettingsBtn = aiRow.add(theme.button("Configure AI")).expandX().widget();
+        aiSettingsBtn.action = () -> mc.setScreen(new AISettingsScreen(theme, this));
 
-        GeminiConfig geminiConfig = MCPServers.get().getGeminiConfig();
-        boolean hasGeminiCredentials = geminiConfig != null && geminiConfig.hasCredentials();
-        boolean geminiEnabled = geminiConfig != null && geminiConfig.isEnabled();
-        String geminiStatus;
-        if (!hasGeminiCredentials) {
-            geminiStatus = "Not Configured";
-        } else if (geminiEnabled) {
-            geminiStatus = "Enabled";
-        } else {
-            geminiStatus = "Configured (Disabled)";
-        }
-        geminiRow.add(theme.label(geminiStatus));
+        AIConfig aiConfig = MCPServers.get().getAIConfig();
+        String providerName = aiConfig.getActiveProvider().name();
+        boolean active = aiConfig.isActiveProviderValid();
+        String aiStatus = providerName + ": " + (active ? "Enabled" : "Not Active");
+        aiRow.add(theme.label(aiStatus));
 
         add(theme.horizontalSeparator()).expandX();
 

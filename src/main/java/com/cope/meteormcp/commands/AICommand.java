@@ -1,8 +1,8 @@
 package com.cope.meteormcp.commands;
 
 import com.cope.meteormcp.MeteorMCPAddon;
-import com.cope.meteormcp.gemini.GeminiClientManager;
-import com.cope.meteormcp.gemini.GeminiExecutor;
+import com.cope.meteormcp.llm.LLMProvider;
+import com.cope.meteormcp.llm.LLMProviderManager;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import java.util.Map;
@@ -13,36 +13,38 @@ import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
 import net.minecraft.command.CommandSource;
 
 /**
- * Simple Gemini prompt command without MCP tool access.
+ * Simple AI prompt command without MCP tool access.
+ * Routes through the active LLM provider (Gemini or Ollama).
  */
-public class GeminiCommand extends Command {
+public class AICommand extends Command {
     private static final long COOLDOWN_MS = 1000;
     private static final Map<UUID, Long> LAST_CALL_TIME = new ConcurrentHashMap<>();
 
-    public GeminiCommand() {
-        super("gemini", "Query Gemini AI without MCP tools");
+    public AICommand() {
+        super("ai", "Query AI without MCP tools");
     }
 
     @Override
     public void build(LiteralArgumentBuilder<CommandSource> builder) {
         builder.then(argument("prompt", StringArgumentType.greedyString())
-            .executes(context -> executeGemini(context.getArgument("prompt", String.class)))
+            .executes(context -> executeAI(context.getArgument("prompt", String.class)))
         );
 
         builder.executes(context -> {
-            error("Prompt is required. Usage: .gemini \"prompt\"");
+            error("Prompt is required. Usage: .ai \"prompt\"");
             return 0;
         });
     }
 
-    int executeGemini(String prompt) {
+    int executeAI(String prompt) {
         if (prompt == null || prompt.isBlank()) {
-            error("Prompt is required. Usage: .gemini \"prompt\"");
+            error("Prompt is required. Usage: .ai \"prompt\"");
             return 0;
         }
 
-        if (!GeminiClientManager.getInstance().isConfigured()) {
-            error("Gemini is not configured. Open Meteor GUI → MCP → Configure Gemini API.");
+        LLMProviderManager manager = LLMProviderManager.getInstance();
+        if (!manager.isConfigured()) {
+            error("AI is not configured. Open Meteor GUI → MCP → Configure AI.");
             return 0;
         }
 
@@ -74,14 +76,15 @@ public class GeminiCommand extends Command {
     }
 
     static void runSimpleQueryAsync(Command command, String prompt) {
-        command.info("Querying Gemini...");
+        LLMProvider provider = LLMProviderManager.getInstance().getActiveProvider();
+        command.info("Querying %s...", provider.name());
         MeteorExecutor.execute(() -> {
             try {
-                String response = GeminiExecutor.executeSimplePrompt(prompt);
+                String response = provider.executeSimplePrompt(prompt);
                 command.info(response);
             } catch (Exception e) {
-                command.error("Gemini query failed: {}", safeMessage(e));
-                MeteorMCPAddon.LOG.error("Gemini command failed", e);
+                command.error("AI query failed: %s", safeMessage(e));
+                MeteorMCPAddon.LOG.error("AI command failed", e);
             }
         });
     }

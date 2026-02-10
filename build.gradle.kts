@@ -53,6 +53,10 @@ dependencies {
 
     // Gemini AI
     modInclude(libs.gemini)
+
+    // Ollama
+    modInclude(libs.ollama4j)
+    modInclude(libs.prometheusSimpleclient)
     modInclude(libs.okhttp)
     modInclude(libs.okio)
     modInclude(libs.kotlinStdlib)
