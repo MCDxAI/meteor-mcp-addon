@@ -1,6 +1,7 @@
 package com.cope.meteormcp.starscript;
 
-import com.cope.meteormcp.gemini.GeminiExecutor;
+import com.cope.meteormcp.llm.LLMProvider;
+import com.cope.meteormcp.llm.LLMProviderManager;
 import com.cope.meteormcp.systems.MCPServerConnection;
 import com.cope.meteormcp.systems.MCPServers;
 import meteordevelopment.meteorclient.utils.misc.MeteorStarscript;
@@ -10,31 +11,39 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * Registers Gemini helper functions into the global StarScript namespace.
+ * Registers AI helper functions into the global StarScript namespace.
+ * Routes through the active LLM provider (Gemini or Ollama).
  */
-public final class GeminiStarScriptIntegration {
-    private GeminiStarScriptIntegration() {
-    }
+public final class AIStarScriptIntegration {
+    private AIStarScriptIntegration() {}
 
     public static void register() {
-        MeteorStarscript.ss.set("gemini", createGeminiFunction());
-        MeteorStarscript.ss.set("gemini_mcp", createGeminiMcpFunction());
+        MeteorStarscript.ss.set("ai", createAIFunction());
+        MeteorStarscript.ss.set("ai_mcp", createAIMcpFunction());
     }
 
-    private static Value createGeminiFunction() {
+    private static Value createAIFunction() {
         return Value.function((ss, argCount) -> {
             String prompt = extractPrompt(ss, argCount);
-            String response = GeminiExecutor.executeSimplePrompt(prompt);
+            LLMProvider provider = LLMProviderManager.getInstance().getActiveProvider();
+            if (provider == null || !provider.isConfigured()) {
+                return Value.string("AI not configured");
+            }
+            String response = provider.executeSimplePrompt(prompt);
             return Value.string(response);
         });
     }
 
-    private static Value createGeminiMcpFunction() {
+    private static Value createAIMcpFunction() {
         return Value.function((ss, argCount) -> {
             String prompt = extractPrompt(ss, argCount);
+            LLMProvider provider = LLMProviderManager.getInstance().getActiveProvider();
+            if (provider == null || !provider.isConfigured()) {
+                return Value.string("AI not configured");
+            }
             Set<String> servers = collectConnectedServers();
-            String response = GeminiExecutor.executeWithMCPTools(prompt, servers);
-            return Value.string(response);
+            LLMProvider.MCPResult result = provider.executeWithMCPTools(prompt, servers);
+            return Value.string(result.response());
         });
     }
 

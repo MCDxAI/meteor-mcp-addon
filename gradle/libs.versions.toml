@@ -18,6 +18,9 @@ mcp = "0.14.1"
 # Gemini AI (https://github.com/googleapis/java-genai)
 gemini = "1.23.0"
 
+# Ollama (https://github.com/ollama4j/ollama4j)
+ollama4j = "1.1.4"
+
 # Dependencies
 reactor-core = "3.6.5"
 reactive-streams = "1.0.4"
@@ -25,6 +28,7 @@ json-schema-validator = "1.5.7"
 okhttp = "4.12.0"
 okio = "3.6.0"
 kotlin-stdlib = "1.9.10"
+prometheus-simpleclient = "0.16.0"
 jackson = "2.18.3"
 junit = "5.10.2"
 starscript = "0.2.3"
@@ -59,6 +63,12 @@ okio = { module = "com.squareup.okio:okio-jvm", version.ref = "okio" }
 kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin-stdlib" }
 kotlinStdlibJdk8 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin-stdlib" }
 kotlinStdlibJdk7 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk7", version.ref = "kotlin-stdlib" }
+
+# Ollama
+ollama4j = { module = "io.github.ollama4j:ollama4j", version.ref = "ollama4j" }
+
+# Prometheus (required by ollama4j metrics)
+prometheusSimpleclient = { module = "io.prometheus:simpleclient", version.ref = "prometheus-simpleclient" }
 
 # Jackson
 jacksonAnnotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }

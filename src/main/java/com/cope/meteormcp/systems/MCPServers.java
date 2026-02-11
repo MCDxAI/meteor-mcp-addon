@@ -3,6 +3,7 @@ package com.cope.meteormcp.systems;
 import com.cope.meteormcp.MeteorMCPAddon;
 import com.cope.meteormcp.commands.MCPToolCommand;
 import com.cope.meteormcp.gemini.GeminiClientManager;
+import com.cope.meteormcp.llm.LLMProviderManager;
 import com.mojang.brigadier.CommandDispatcher;
 import io.modelcontextprotocol.spec.McpSchema.Tool;
 import meteordevelopment.meteorclient.commands.Command;
@@ -30,7 +31,7 @@ public class MCPServers extends System<MCPServers> {
     private final Map<String, MCPServerConnection> connections = new ConcurrentHashMap<>();
     private final Map<String, MCPServerConfig> configs = new ConcurrentHashMap<>();
     private final Map<String, List<MCPToolCommand>> registeredCommands = new ConcurrentHashMap<>();
-    private GeminiConfig geminiConfig = new GeminiConfig();
+    private AIConfig aiConfig = new AIConfig();
 
     /**
      * Creates the system container used by Meteor's global registry. The system name
@@ -231,10 +232,10 @@ public class MCPServers extends System<MCPServers> {
     }
 
     /**
-     * @return current Gemini configuration snapshot
+     * @return current Gemini configuration (convenience accessor via AIConfig)
      */
     public GeminiConfig getGeminiConfig() {
-        return geminiConfig;
+        return aiConfig.getGeminiConfig();
     }
 
     /**
@@ -244,11 +245,34 @@ public class MCPServers extends System<MCPServers> {
      */
     public void setGeminiConfig(GeminiConfig config) {
         GeminiConfig next = config != null ? config : new GeminiConfig();
-        if (!Objects.equals(this.geminiConfig, next)) {
-            this.geminiConfig = next;
+        if (!Objects.equals(aiConfig.getGeminiConfig(), next)) {
+            aiConfig.setGeminiConfig(next);
             GeminiClientManager.getInstance().invalidateClient();
         } else {
-            this.geminiConfig = next;
+            aiConfig.setGeminiConfig(next);
+        }
+    }
+
+    /**
+     * @return current unified AI configuration
+     */
+    public AIConfig getAIConfig() {
+        return aiConfig;
+    }
+
+    /**
+     * Replace the stored AI configuration and invalidate provider caches.
+     *
+     * @param config new configuration instance (falls back to defaults when {@code null})
+     */
+    public void setAIConfig(AIConfig config) {
+        AIConfig next = config != null ? config : new AIConfig();
+        if (!Objects.equals(this.aiConfig, next)) {
+            this.aiConfig = next;
+            GeminiClientManager.getInstance().invalidateClient();
+            LLMProviderManager.getInstance().invalidate();
+        } else {
+            this.aiConfig = next;
         }
     }
 
@@ -362,7 +386,7 @@ public class MCPServers extends System<MCPServers> {
             serversList.add(config.toTag());
         }
         tag.put("servers", serversList);
-        tag.put("gemini", geminiConfig.toTag());
+        tag.put("ai", aiConfig.toTag());
 
         return tag;
     }
@@ -387,17 +411,29 @@ public class MCPServers extends System<MCPServers> {
             MeteorMCPAddon.LOG.info("Loaded {} MCP server configurations", configs.size());
         }
 
-        if (tag.contains("gemini")) {
+        if (tag.contains("ai")) {
+            // New unified AI config
+            tag.getCompound("ai").ifPresent(aiTag -> {
+                try {
+                    this.aiConfig = AIConfig.fromTag(aiTag);
+                } catch (Exception e) {
+                    MeteorMCPAddon.LOG.error("Failed to load AI configuration: {}", e.getMessage());
+                    this.aiConfig = new AIConfig();
+                }
+            });
+        } else if (tag.contains("gemini")) {
+            // Backwards compatibility: migrate old Gemini-only config
             tag.getCompound("gemini").ifPresent(geminiTag -> {
                 try {
-                    this.geminiConfig = GeminiConfig.fromTag(geminiTag);
+                    this.aiConfig = AIConfig.migrateFromGeminiTag(geminiTag);
+                    MeteorMCPAddon.LOG.info("Migrated legacy Gemini config to unified AI config");
                 } catch (Exception e) {
-                    MeteorMCPAddon.LOG.error("Failed to load Gemini configuration: {}", e.getMessage());
-                    this.geminiConfig = new GeminiConfig();
+                    MeteorMCPAddon.LOG.error("Failed to migrate Gemini configuration: {}", e.getMessage());
+                    this.aiConfig = new AIConfig();
                 }
             });
         } else {
-            this.geminiConfig = new GeminiConfig();
+            this.aiConfig = new AIConfig();
         }
 
         return this;

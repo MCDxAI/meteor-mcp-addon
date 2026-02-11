@@ -1,9 +1,9 @@
 package com.cope.meteormcp;
 
-import com.cope.meteormcp.commands.GeminiCommand;
-import com.cope.meteormcp.commands.GeminiMCPCommand;
+import com.cope.meteormcp.commands.AICommand;
+import com.cope.meteormcp.commands.AIMCPCommand;
 import com.cope.meteormcp.gui.tabs.MCPTab;
-import com.cope.meteormcp.starscript.GeminiStarScriptIntegration;
+import com.cope.meteormcp.starscript.AIStarScriptIntegration;
 import com.cope.meteormcp.starscript.MCPToolExecutor;
 import com.cope.meteormcp.systems.MCPServerConnection;
 import com.cope.meteormcp.systems.MCPServers;
@@ -45,19 +45,19 @@ public class MeteorMCPAddon extends MeteorAddon {
         Tabs.add(new MCPTab());
         LOG.info("MCP tab registered");
 
-        // Register Gemini helpers in StarScript
-        GeminiStarScriptIntegration.register();
-        LOG.info("Gemini StarScript functions registered");
+        // Register AI helpers in StarScript
+        AIStarScriptIntegration.register();
+        LOG.info("AI StarScript functions registered");
 
-        // Register Gemini chat commands
-        GeminiCommand geminiCommand = new GeminiCommand();
-        Commands.add(geminiCommand);
-        geminiCommand.registerTo(Commands.DISPATCHER);
+        // Register AI chat commands
+        AICommand aiCommand = new AICommand();
+        Commands.add(aiCommand);
+        aiCommand.registerTo(Commands.DISPATCHER);
 
-        GeminiMCPCommand geminiMCPCommand = new GeminiMCPCommand();
-        Commands.add(geminiMCPCommand);
-        geminiMCPCommand.registerTo(Commands.DISPATCHER);
-        LOG.info("Gemini chat commands registered");
+        AIMCPCommand aiMCPCommand = new AIMCPCommand();
+        Commands.add(aiMCPCommand);
+        aiMCPCommand.registerTo(Commands.DISPATCHER);
+        LOG.info("AI chat commands registered");
 
         // Connect to auto-connect servers
         MeteorExecutor.execute(() -> MCPServers.get().connectAutoConnect());

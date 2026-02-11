@@ -1,14 +1,14 @@
 package com.cope.meteormcp.commands;
 
 import com.cope.meteormcp.MeteorMCPAddon;
-import com.cope.meteormcp.gemini.GeminiClientManager;
-import com.cope.meteormcp.gemini.GeminiExecutor;
+import com.cope.meteormcp.llm.LLMProvider;
+import com.cope.meteormcp.llm.LLMProvider.MCPResult;
+import com.cope.meteormcp.llm.LLMProvider.ToolCallInfo;
+import com.cope.meteormcp.llm.LLMProviderManager;
 import com.cope.meteormcp.systems.MCPServerConnection;
 import com.cope.meteormcp.systems.MCPServers;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.cope.meteormcp.gemini.GeminiExecutor.GeminiMCPResult;
-import com.cope.meteormcp.gemini.GeminiExecutor.ToolCallInfo;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -19,37 +19,39 @@ import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
 import net.minecraft.command.CommandSource;
 
 /**
- * Gemini prompt command that exposes all connected MCP tools.
+ * AI prompt command that exposes all connected MCP tools.
+ * Routes through the active LLM provider (Gemini or Ollama).
  */
-public class GeminiMCPCommand extends Command {
-    public GeminiMCPCommand() {
-        super("gemini-mcp", "Query Gemini AI with access to all connected MCP tools");
+public class AIMCPCommand extends Command {
+    public AIMCPCommand() {
+        super("ai-mcp", "Query AI with access to all connected MCP tools");
     }
 
     @Override
     public void build(LiteralArgumentBuilder<CommandSource> builder) {
         builder.then(argument("prompt", StringArgumentType.greedyString())
-            .executes(context -> executeGeminiMCP(context.getArgument("prompt", String.class)))
+            .executes(context -> executeAIMCP(context.getArgument("prompt", String.class)))
         );
 
         builder.executes(context -> {
-            error("Prompt is required. Usage: .gemini-mcp \"prompt\"");
+            error("Prompt is required. Usage: .ai-mcp \"prompt\"");
             return 0;
         });
     }
 
-    private int executeGeminiMCP(String prompt) {
+    private int executeAIMCP(String prompt) {
         if (prompt == null || prompt.isBlank()) {
-            error("Prompt is required. Usage: .gemini-mcp \"prompt\"");
+            error("Prompt is required. Usage: .ai-mcp \"prompt\"");
             return 0;
         }
 
-        if (!GeminiClientManager.getInstance().isConfigured()) {
-            error("Gemini is not configured. Open Meteor GUI → MCP → Configure Gemini API.");
+        LLMProviderManager manager = LLMProviderManager.getInstance();
+        if (!manager.isConfigured()) {
+            error("AI is not configured. Open Meteor GUI → MCP → Configure AI.");
             return 0;
         }
 
-        if (!GeminiCommand.enforceCooldown(this)) {
+        if (!AICommand.enforceCooldown(this)) {
             return 0;
         }
 
@@ -59,20 +61,21 @@ public class GeminiMCPCommand extends Command {
             .collect(Collectors.toCollection(LinkedHashSet::new));
 
         if (connectedServers.isEmpty()) {
-            warning("No MCP servers connected. Running simple Gemini query.");
-            GeminiCommand.runSimpleQueryAsync(this, prompt);
+            warning("No MCP servers connected. Running simple AI query.");
+            AICommand.runSimpleQueryAsync(this, prompt);
             return SINGLE_SUCCESS;
         }
 
-        info("Querying Gemini with %d MCP server(s)...", connectedServers.size());
+        LLMProvider provider = manager.getActiveProvider();
+        info("Querying %s with %d MCP server(s)...", provider.name(), connectedServers.size());
         MeteorExecutor.execute(() -> {
             try {
-                GeminiMCPResult result = GeminiExecutor.executeWithMCPToolsDetailed(prompt, connectedServers);
+                MCPResult result = provider.executeWithMCPTools(prompt, connectedServers);
                 info(result.response());
                 displayToolUsage(result.toolCalls());
             } catch (Exception e) {
-                error("Gemini MCP query failed: {}", safeMessage(e));
-                MeteorMCPAddon.LOG.error("Gemini MCP command failed", e);
+                error("AI MCP query failed: %s", safeMessage(e));
+                MeteorMCPAddon.LOG.error("AI MCP command failed", e);
             }
         });
 
