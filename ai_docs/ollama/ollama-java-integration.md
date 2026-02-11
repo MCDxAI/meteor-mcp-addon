@@ -410,6 +410,7 @@ Streaming responses are JSON objects separated by newlines (NDJSON format).
 
 ```java
 import io.github.ollama4j.Ollama;
+import io.github.ollama4j.models.chat.OllamaChatMessageRole;
 import io.github.ollama4j.models.chat.OllamaChatRequest;
 import io.github.ollama4j.models.chat.OllamaChatResult;
 
@@ -418,12 +419,12 @@ public class OllamaChatExample {
         Ollama ollama = new Ollama("http://localhost:11434");
 
         OllamaChatRequest request = OllamaChatRequest.builder()
-            .model("llama3.1")
-            .message("user", "What is the capital of France?")
+            .withModel("llama3.1")
+            .withMessage(OllamaChatMessageRole.USER, "What is the capital of France?")
             .build();
 
-        OllamaChatResult result = ollama.chat(request);
-        System.out.println(result.getMessage().getContent());
+        OllamaChatResult result = ollama.chat(request, token -> {});
+        System.out.println(result.getResponseModel().getMessage().getResponse());
     }
 }
 ```
@@ -459,12 +460,12 @@ api.registerTool(weatherSpec, weatherTool::getCurrentWeather);
 
 // Use with chat
 OllamaChatRequest request = OllamaChatRequest.builder()
-    .model("mistral")
-    .message("user", "What's the weather in Tokyo?")
-    .withTools()  // Enable tool calling
+    .withModel("mistral")
+    .withMessage(OllamaChatMessageRole.USER, "What's the weather in Tokyo?")
+    .withUseTools(true)  // Enable tool calling
     .build();
 
-OllamaChatResult result = api.chat(request);
+OllamaChatResult result = api.chat(request, token -> {});
 ```
 
 ### Example 3: Annotation-Based Tool Registration

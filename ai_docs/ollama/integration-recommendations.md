@@ -181,10 +181,10 @@ MCPServerConnection.callTool()
 ```kotlin
 dependencies {
     // Existing dependencies
-    include(implementation("com.google.genai:google-genai:1.23.0")!!)
+    implementation("com.google.genai:google-genai:1.23.0")
 
     // Add Ollama4j
-    include(implementation("io.github.ollama4j:ollama4j:1.1.4")!!)
+    implementation("io.github.ollama4j:ollama4j:1.1.4")
 
     // ... rest of dependencies
 }
@@ -233,11 +233,11 @@ public class OllamaExecutor {
     // Simple prompt (no tools)
     public String execute(String model, String prompt) {
         OllamaChatRequest request = OllamaChatRequest.builder()
-            .model(model)
-            .message("user", prompt)
+            .withModel(model)
+            .withMessage(OllamaChatMessageRole.USER, prompt)
             .build();
 
-        return api.chat(request).getMessage().getContent();
+        return api.chat(request, token -> {}).getResponseModel().getMessage().getResponse();
     }
 
     // MCP-enhanced loop (with tool calling)
@@ -249,20 +249,21 @@ public class OllamaExecutor {
 
         // Chat with tools enabled
         OllamaChatRequest request = OllamaChatRequest.builder()
-            .model(model)
-            .message("user", prompt)
-            .withTools()
+            .withModel(model)
+            .withMessage(OllamaChatMessageRole.USER, prompt)
+            .withUseTools(true)
             .build();
 
-        OllamaChatResult result = api.chat(request);
+        OllamaChatResult result = api.chat(request, token -> {});
 
         // Manual function calling loop
-        while (result.getMessage().hasToolCalls()) {
+        while (result.getResponseModel().getMessage().getToolCalls() != null
+            && !result.getResponseModel().getMessage().getToolCalls().isEmpty()) {
             // Execute tool calls
-            List<ToolCall> toolCalls = result.getMessage().getToolCalls();
+            List<OllamaChatToolCalls> toolCalls = result.getResponseModel().getMessage().getToolCalls();
             List<String> toolResults = new ArrayList<>();
 
-            for (ToolCall call : toolCalls) {
+            for (OllamaChatToolCalls call : toolCalls) {
                 String serverName = extractServerName(call.getFunction().getName());
                 String toolName = extractToolName(call.getFunction().getName());
                 Map<String, Object> args = call.getFunction().getArguments();
@@ -277,7 +278,7 @@ public class OllamaExecutor {
             // ... (similar to GeminiExecutor pattern)
         }
 
-        return result.getMessage().getContent();
+        return result.getResponseModel().getMessage().getResponse();
     }
 
     private void registerServerTools(MCPServerConnection server) {
@@ -691,7 +692,7 @@ public class OllamaClientManager {
 **Solution:** Add connection check in GUI, show clear error message
 
 ### Issue 2: Model Not Installed
-**Solution:** Detect ModelNotFoundException, suggest `ollama pull <model>`
+**Solution:** Detect the "model not found" error text from `OllamaException` and suggest `ollama pull <model>`
 
 ### Issue 3: Slow Response Times
 **Solution:** Use streaming, show "Thinking..." indicator

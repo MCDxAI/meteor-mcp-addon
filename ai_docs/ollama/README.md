@@ -90,16 +90,17 @@ dependencies {
 ### 4. Basic Java Code
 ```java
 import io.github.ollama4j.Ollama;
+import io.github.ollama4j.models.chat.OllamaChatMessageRole;
 import io.github.ollama4j.models.chat.OllamaChatRequest;
 
 Ollama api = new Ollama("http://localhost:11434");
 
 OllamaChatRequest request = OllamaChatRequest.builder()
-    .model("llama3.1")
-    .message("user", "Hello!")
+    .withModel("llama3.1")
+    .withMessage(OllamaChatMessageRole.USER, "Hello!")
     .build();
 
-String response = api.chat(request).getMessage().getContent();
+String response = api.chat(request, token -> {}).getResponseModel().getMessage().getResponse();
 System.out.println(response);
 ```
 
@@ -148,7 +149,7 @@ For **meteor-mcp-addon**, follow this approach:
 ### Phase 1: Add Dependency
 ```kotlin
 // build.gradle.kts
-include(implementation("io.github.ollama4j:ollama4j:1.1.4")!!)
+implementation("io.github.ollama4j:ollama4j:1.1.4")
 ```
 
 ### Phase 2: Create Config System

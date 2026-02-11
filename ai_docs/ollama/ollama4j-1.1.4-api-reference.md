@@ -39,7 +39,7 @@ OllamaChatRequest request = OllamaChatRequest.builder()
     .withMessage(OllamaChatMessageRole.USER, "Hello!")
     .withOptions(options)
     .withKeepAlive("5m")
-    .build();  // NO build() method needed - returns OllamaChatRequest directly
+    .build();  // Optional convenience call; returns the same OllamaChatRequest instance
 ```
 
 **Key Methods**:
@@ -390,7 +390,7 @@ public class OllamaExample {
 1. **Wrong main class**: Use `Ollama`
 2. **Wrong builder method**: Use `.withModel()`, NOT `.model()`
 3. **Wrong response accessor**: Use `result.getResponseModel().getMessage().getResponse()`, NOT `result.getMessage()`
-4. **Calling build()**: Builder methods return `OllamaChatRequest` directly, no `.build()` needed
+4. **Calling build()**: `.build()` exists, but it is optional and returns the same request instance
 5. **Wrong message field**: `OllamaChatMessage` has `getResponse()`, NOT `getContent()` or `getMessage()`
 6. **Tool classes**: Import from `io.github.ollama4j.tools.Tools.*`, NOT separate top-level classes
 
@@ -410,7 +410,7 @@ String response = result.getMessage();  // Wrong accessor
 Ollama ollama = new Ollama("http://localhost:11434");
 OllamaChatRequest request = OllamaChatRequest.builder()
     .withModel("llama3.2")  // Correct method
-    // Returns OllamaChatRequest directly, no .build()
+    // build() is optional and returns the same instance
 String response = result.getResponseModel().getMessage().getResponse();
 ```
 

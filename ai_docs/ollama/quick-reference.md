@@ -53,7 +53,7 @@ implementation("io.github.ollama4j:ollama4j:1.1.4")
 
 ### With Shading (for Minecraft mods)
 ```kotlin
-include(implementation("io.github.ollama4j:ollama4j:1.1.4")!!)
+implementation("io.github.ollama4j:ollama4j:1.1.4")
 ```
 
 ---
@@ -69,22 +69,23 @@ Ollama api = new Ollama("http://localhost:11434");
 
 ### Simple Chat
 ```java
+import io.github.ollama4j.models.chat.OllamaChatMessageRole;
 import io.github.ollama4j.models.chat.OllamaChatRequest;
 
 OllamaChatRequest request = OllamaChatRequest.builder()
-    .model("llama3.1")
-    .message("user", "Hello!")
+    .withModel("llama3.1")
+    .withMessage(OllamaChatMessageRole.USER, "Hello!")
     .build();
 
-String response = api.chat(request).getMessage().getContent();
+String response = api.chat(request, token -> {}).getResponseModel().getMessage().getResponse();
 ```
 
 ### With System Prompt
 ```java
 OllamaChatRequest request = OllamaChatRequest.builder()
-    .model("llama3.1")
-    .message("system", "You are a helpful assistant")
-    .message("user", "Hello!")
+    .withModel("llama3.1")
+    .withMessage(OllamaChatMessageRole.SYSTEM, "You are a helpful assistant")
+    .withMessage(OllamaChatMessageRole.USER, "Hello!")
     .build();
 ```
 
@@ -118,12 +119,12 @@ api.registerAnnotatedTools(new WeatherTools());
 ### Use Tools in Chat
 ```java
 OllamaChatRequest request = OllamaChatRequest.builder()
-    .model("llama3.1")  // Must support tools
-    .message("user", "What's the weather in Tokyo?")
-    .withTools()
+    .withModel("llama3.1")  // Must support tools
+    .withMessage(OllamaChatMessageRole.USER, "What's the weather in Tokyo?")
+    .withUseTools(true)
     .build();
 
-OllamaChatResult result = api.chat(request);
+OllamaChatResult result = api.chat(request, token -> {});
 ```
 
 ---
@@ -132,30 +133,14 @@ OllamaChatResult result = api.chat(request);
 
 ### Stream Chat
 ```java
-import io.github.ollama4j.handlers.StreamHandler;
-
 OllamaChatRequest request = OllamaChatRequest.builder()
-    .model("llama3.1")
-    .message("user", "Tell me a story")
-    .stream(true)
+    .withModel("llama3.1")
+    .withMessage(OllamaChatMessageRole.USER, "Tell me a story")
+    .withStreaming()
     .build();
 
-api.chatStream(request, new StreamHandler() {
-    @Override
-    public void onChunk(String chunk) {
-        System.out.print(chunk);
-    }
-
-    @Override
-    public void onComplete() {
-        System.out.println("\n[Done]");
-    }
-
-    @Override
-    public void onError(Throwable error) {
-        error.printStackTrace();
-    }
-});
+api.chat(request, chunk -> System.out.print(chunk.getMessage().getResponse()));
+System.out.println("\n[Done]");
 ```
 
 ---
@@ -205,9 +190,9 @@ OllamaGenerateOptions options = OllamaGenerateOptions.builder()
     .build();
 
 OllamaChatRequest request = OllamaChatRequest.builder()
-    .model("llama3.1")
-    .message("user", "Hello")
-    .options(options)
+    .withModel("llama3.1")
+    .withMessage(OllamaChatMessageRole.USER, "Hello")
+    .withOptions(options)
     .build();
 ```
 
@@ -292,22 +277,13 @@ curl http://localhost:11434/api/embeddings -d '{
 
 ```java
 import io.github.ollama4j.exceptions.OllamaException;
-import io.github.ollama4j.exceptions.ModelNotFoundException;
-import io.github.ollama4j.exceptions.ConnectionException;
 
 try {
-    OllamaChatResult result = api.chat(request);
-    System.out.println(result.getMessage().getContent());
-
-} catch (ModelNotFoundException e) {
-    System.err.println("Model not found. Try: ollama pull " + request.getModel());
-
-} catch (ConnectionException e) {
-    System.err.println("Can't connect to Ollama. Is it running?");
-    System.err.println("Start with: ollama serve");
-
+    OllamaChatResult result = api.chat(request, token -> {});
+    System.out.println(result.getResponseModel().getMessage().getResponse());
 } catch (OllamaException e) {
     System.err.println("Ollama error: " + e.getMessage());
+    System.err.println("If it's a model issue, try: ollama pull " + request.getModel());
 }
 ```
 
@@ -317,11 +293,19 @@ try {
 
 ```java
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import io.github.ollama4j.exceptions.OllamaException;
 
-CompletableFuture<OllamaChatResult> future = api.chatAsync(request);
+CompletableFuture<OllamaChatResult> future = CompletableFuture.supplyAsync(() -> {
+    try {
+        return api.chat(request, token -> {});
+    } catch (OllamaException e) {
+        throw new CompletionException(e);
+    }
+});
 
 future.thenAccept(result -> {
-    System.out.println(result.getMessage().getContent());
+    System.out.println(result.getResponseModel().getMessage().getResponse());
 }).exceptionally(error -> {
     System.err.println("Error: " + error.getMessage());
     return null;
@@ -359,23 +343,22 @@ public void ensureModel(String model) {
 ### 3. Use Streaming for Long Responses
 ```java
 // Long responses (stories, articles)
-request.stream(true);
-api.chatStream(request, handler);
+request.withStreaming();
+api.chat(request, chunk -> System.out.print(chunk.getMessage().getResponse()));
 
 // Short responses (answers, facts)
-request.stream(false);
-api.chat(request);
+api.chat(request, token -> {});
 ```
 
 ### 4. Set Appropriate Timeouts
 ```java
-api.setRequestTimeout(60000);  // 60 seconds for slow models
+api.setRequestTimeoutSeconds(60);  // 60 seconds
 ```
 
 ### 5. Handle Errors Gracefully
 ```java
 try {
-    return api.chat(request).getMessage().getContent();
+    return api.chat(request, token -> {}).getResponseModel().getMessage().getResponse();
 } catch (OllamaException e) {
     return "Sorry, I'm having trouble connecting to the AI service.";
 }
@@ -392,7 +375,7 @@ public boolean isOllamaRunning() {
         Ollama api = new Ollama();
         api.listModels();
         return true;
-    } catch (ConnectionException e) {
+    } catch (OllamaException e) {
         return false;
     }
 }
@@ -404,12 +387,12 @@ public void testChat() {
     Ollama api = new Ollama();
 
     OllamaChatRequest request = OllamaChatRequest.builder()
-        .model("llama3.1")
-        .message("user", "Say 'test successful'")
+        .withModel("llama3.1")
+        .withMessage(OllamaChatMessageRole.USER, "Say 'test successful'")
         .build();
 
     try {
-        String response = api.chat(request).getMessage().getContent();
+        String response = api.chat(request, token -> {}).getResponseModel().getMessage().getResponse();
         System.out.println("✓ Ollama working: " + response);
     } catch (Exception e) {
         System.err.println("✗ Ollama test failed: " + e.getMessage());
@@ -443,7 +426,7 @@ Fix: Use a smaller model (e.g., llama3.2:3b instead of llama3.3:70b)
 ```
 Error: Request timeout
 Fix: Increase timeout or use a faster model
-api.setRequestTimeout(120000);  // 2 minutes
+api.setRequestTimeoutSeconds(120);  // 2 minutes
 ```
 
 ### "Tool calling not working"

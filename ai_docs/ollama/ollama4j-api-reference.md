@@ -4,6 +4,8 @@
 **Java Version Required:** 17+
 **Ollama Version Required:** 0.11.10+
 
+> Note: For this repo, treat `ollama4j-1.1.4-api-reference.md` as the canonical API guide. This file is broader and some snippets may need adaptation per patch version.
+
 ## Table of Contents
 1. [Installation](#installation)
 2. [Initialization](#initialization)
@@ -71,7 +73,7 @@ Ollama api = new Ollama("http://localhost:11434");
 api.setBasicAuth("username", "password");
 
 // Bearer token
-api.setBearerToken("your-token-here");
+api.setBearerAuth("your-token-here");
 ```
 
 ---
@@ -81,34 +83,35 @@ api.setBearerToken("your-token-here");
 ### Basic Chat
 
 ```java
+import io.github.ollama4j.models.chat.OllamaChatMessageRole;
 import io.github.ollama4j.models.chat.OllamaChatRequest;
 import io.github.ollama4j.models.chat.OllamaChatResult;
 
 OllamaChatRequest request = OllamaChatRequest.builder()
-    .model("llama3.1")
-    .message("user", "What is the capital of France?")
+    .withModel("llama3.1")
+    .withMessage(OllamaChatMessageRole.USER, "What is the capital of France?")
     .build();
 
-OllamaChatResult result = api.chat(request);
-String response = result.getMessage().getContent();
+OllamaChatResult result = api.chat(request, token -> {});
+String response = result.getResponseModel().getMessage().getResponse();
 ```
 
 ### Multi-Turn Conversation
 
 ```java
-import io.github.ollama4j.models.chat.OllamaChatRequestBuilder;
+import io.github.ollama4j.models.chat.OllamaChatRequest;
 
-OllamaChatRequestBuilder builder = OllamaChatRequest.builder()
-    .model("llama3.1");
+OllamaChatRequest builder = OllamaChatRequest.builder()
+    .withModel("llama3.1");
 
 // First message
-builder.message("user", "Hello!");
-OllamaChatResult result1 = api.chat(builder.build());
+builder.withMessage(OllamaChatMessageRole.USER, "Hello!");
+OllamaChatResult result1 = api.chat(builder.build(), token -> {});
 
 // Second message (preserves history)
-builder.message("assistant", result1.getMessage().getContent());
-builder.message("user", "Tell me a joke");
-OllamaChatResult result2 = api.chat(builder.build());
+builder.withMessage(OllamaChatMessageRole.ASSISTANT, result1.getResponseModel().getMessage().getResponse());
+builder.withMessage(OllamaChatMessageRole.USER, "Tell me a joke");
+OllamaChatResult result2 = api.chat(builder.build(), token -> {});
 ```
 
 ### Chat with Images (Vision Models)
@@ -117,21 +120,21 @@ OllamaChatResult result2 = api.chat(builder.build());
 import java.util.List;
 
 OllamaChatRequest request = OllamaChatRequest.builder()
-    .model("llava")
-    .message("user", "What's in this image?")
+    .withModel("llava")
+    .withMessage(OllamaChatMessageRole.USER, "What's in this image?")
     .images(List.of("path/to/image.jpg"))  // Can be file paths or base64
     .build();
 
-OllamaChatResult result = api.chat(request);
+OllamaChatResult result = api.chat(request, token -> {});
 ```
 
 ### Chat with System Prompt
 
 ```java
 OllamaChatRequest request = OllamaChatRequest.builder()
-    .model("llama3.1")
-    .message("system", "You are a helpful programming assistant.")
-    .message("user", "How do I reverse a string in Java?")
+    .withModel("llama3.1")
+    .withMessage(OllamaChatMessageRole.SYSTEM, "You are a helpful programming assistant.")
+    .withMessage(OllamaChatMessageRole.USER, "How do I reverse a string in Java?")
     .build();
 ```
 
@@ -146,8 +149,8 @@ import io.github.ollama4j.models.generate.OllamaGenerateRequest;
 import io.github.ollama4j.models.generate.OllamaGenerateResult;
 
 OllamaGenerateRequest request = OllamaGenerateRequest.builder()
-    .model("llama3.1")
-    .prompt("Once upon a time")
+    .withModel("llama3.1")
+    .withPrompt("Once upon a time")
     .build();
 
 OllamaGenerateResult result = api.generate(request);
@@ -168,9 +171,9 @@ OllamaGenerateOptions options = OllamaGenerateOptions.builder()
     .build();
 
 OllamaGenerateRequest request = OllamaGenerateRequest.builder()
-    .model("llama3.1")
-    .prompt("Write a haiku about programming:")
-    .options(options)
+    .withModel("llama3.1")
+    .withPrompt("Write a haiku about programming:")
+    .withOptions(options)
     .build();
 ```
 
@@ -178,8 +181,16 @@ OllamaGenerateRequest request = OllamaGenerateRequest.builder()
 
 ```java
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import io.github.ollama4j.models.response.OllamaResult;
 
-CompletableFuture<OllamaGenerateResult> future = api.generateAsync(request);
+CompletableFuture<OllamaResult> future = CompletableFuture.supplyAsync(() -> {
+    try {
+        return api.generate(request, null);
+    } catch (OllamaException e) {
+        throw new CompletionException(e);
+    }
+});
 
 future.thenAccept(result -> {
     System.out.println(result.getResponse());
@@ -253,16 +264,17 @@ api.registerAnnotatedTools(new CalculatorTools());
 
 ```java
 OllamaChatRequest request = OllamaChatRequest.builder()
-    .model("mistral")  // Must be a tool-capable model
-    .message("user", "What's the weather in Tokyo?")
-    .withTools()  // Enable tool calling
+    .withModel("mistral")  // Must be a tool-capable model
+    .withMessage(OllamaChatMessageRole.USER, "What's the weather in Tokyo?")
+    .withUseTools(true)  // Enable tool calling
     .build();
 
-OllamaChatResult result = api.chat(request);
+OllamaChatResult result = api.chat(request, token -> {});
 
 // Check if tools were called
-if (result.getMessage().hasToolCalls()) {
-    List<ToolCall> toolCalls = result.getMessage().getToolCalls();
+if (result.getResponseModel().getMessage().getToolCalls() != null
+    && !result.getResponseModel().getMessage().getToolCalls().isEmpty()) {
+    List<OllamaChatToolCalls> toolCalls = result.getResponseModel().getMessage().getToolCalls();
     // Process tool calls
 }
 ```
@@ -289,8 +301,8 @@ import io.github.ollama4j.models.embeddings.OllamaEmbeddingsRequest;
 import io.github.ollama4j.models.embeddings.OllamaEmbeddingsResult;
 
 OllamaEmbeddingsRequest request = OllamaEmbeddingsRequest.builder()
-    .model("nomic-embed-text")
-    .prompt("Hello world")
+    .withModel("nomic-embed-text")
+    .withPrompt("Hello world")
     .build();
 
 OllamaEmbeddingsResult result = api.embeddings(request);
@@ -311,8 +323,8 @@ List<String> texts = List.of(
 List<double[]> embeddings = texts.stream()
     .map(text -> {
         OllamaEmbeddingsRequest req = OllamaEmbeddingsRequest.builder()
-            .model("nomic-embed-text")
-            .prompt(text)
+            .withModel("nomic-embed-text")
+            .withPrompt(text)
             .build();
         return api.embeddings(req).getEmbedding();
     })
@@ -390,57 +402,33 @@ boolean exists = api.listModels().stream()
 ### Stream Chat Responses
 
 ```java
-import io.github.ollama4j.handlers.StreamHandler;
-
 OllamaChatRequest request = OllamaChatRequest.builder()
-    .model("llama3.1")
-    .message("user", "Tell me a long story")
-    .stream(true)
+    .withModel("llama3.1")
+    .withMessage(OllamaChatMessageRole.USER, "Tell me a long story")
+    .withStreaming()
     .build();
 
-api.chatStream(request, new StreamHandler() {
-    @Override
-    public void onChunk(String chunk) {
-        System.out.print(chunk);
-    }
-
-    @Override
-    public void onComplete() {
-        System.out.println("\n[Stream complete]");
-    }
-
-    @Override
-    public void onError(Throwable error) {
-        System.err.println("Error: " + error.getMessage());
-    }
-});
+api.chat(request, chunk -> System.out.print(chunk.getMessage().getResponse()));
+System.out.println("\n[Stream complete]");
 ```
 
 ### Stream Generation
 
 ```java
+import io.github.ollama4j.models.generate.OllamaGenerateStreamObserver;
+
 OllamaGenerateRequest request = OllamaGenerateRequest.builder()
-    .model("llama3.1")
-    .prompt("Write a poem")
-    .stream(true)
+    .withModel("llama3.1")
+    .withPrompt("Write a poem")
+    .withStreaming(true)
     .build();
 
-api.generateStream(request, new StreamHandler() {
-    @Override
-    public void onChunk(String chunk) {
-        System.out.print(chunk);
-    }
-
-    @Override
-    public void onComplete() {
-        System.out.println("\n[Done]");
-    }
-
-    @Override
-    public void onError(Throwable error) {
-        error.printStackTrace();
-    }
-});
+OllamaGenerateStreamObserver observer = new OllamaGenerateStreamObserver(
+    thinking -> {},
+    token -> System.out.print(token)
+);
+api.generate(request, observer);
+System.out.println("\n[Done]");
 ```
 
 ---
@@ -458,7 +446,7 @@ api.setBasicAuth("username", "password");
 
 ```java
 Ollama api = new Ollama("http://localhost:11434");
-api.setBearerToken("your-bearer-token");
+api.setBearerAuth("your-bearer-token");
 ```
 
 ### Custom Headers
@@ -481,7 +469,7 @@ api.setCustomHeaders(Map.of(
 
 ```java
 Ollama api = new Ollama("http://localhost:11434");
-api.setRequestTimeout(60000);  // 60 seconds in milliseconds
+api.setRequestTimeoutSeconds(60);  // 60 seconds
 ```
 
 ### Global Options
@@ -498,9 +486,9 @@ OllamaGenerateOptions defaultOptions = OllamaGenerateOptions.builder()
 
 // Use in request
 OllamaChatRequest request = OllamaChatRequest.builder()
-    .model("llama3.1")
-    .message("user", "Hello")
-    .options(defaultOptions)
+    .withModel("llama3.1")
+    .withMessage(OllamaChatMessageRole.USER, "Hello")
+    .withOptions(defaultOptions)
     .build();
 ```
 
@@ -546,17 +534,9 @@ System.out.println("Error rate: " + metrics.getErrorRate());
 
 ```java
 import io.github.ollama4j.exceptions.OllamaException;
-import io.github.ollama4j.exceptions.ModelNotFoundException;
-import io.github.ollama4j.exceptions.ConnectionException;
 
 try {
-    OllamaChatResult result = api.chat(request);
-} catch (ModelNotFoundException e) {
-    System.err.println("Model not found: " + e.getMessage());
-    // Suggest pulling the model
-} catch (ConnectionException e) {
-    System.err.println("Cannot connect to Ollama: " + e.getMessage());
-    // Check if Ollama is running
+    OllamaChatResult result = api.chat(request, token -> {});
 } catch (OllamaException e) {
     System.err.println("Ollama error: " + e.getMessage());
     e.printStackTrace();
@@ -583,36 +563,30 @@ public Ollama getApi() {
 
 ```java
 // Good - non-blocking
-CompletableFuture<OllamaGenerateResult> future = api.generateAsync(request);
+CompletableFuture<OllamaResult> future = CompletableFuture.supplyAsync(() -> {
+    try {
+        return api.generate(request, null);
+    } catch (OllamaException e) {
+        throw new CompletionException(e);
+    }
+});
 future.thenAccept(result -> processResult(result));
 
 // Bad - blocks thread
-OllamaGenerateResult result = api.generate(request);  // Blocks
+OllamaResult result = api.generate(request, null);  // Blocks
 ```
 
 ### 3. Handle Streaming Properly
 
 ```java
 // Good - proper error handling
-api.chatStream(request, new StreamHandler() {
-    private StringBuilder buffer = new StringBuilder();
-
-    @Override
-    public void onChunk(String chunk) {
-        buffer.append(chunk);
-    }
-
-    @Override
-    public void onComplete() {
-        processFullResponse(buffer.toString());
-    }
-
-    @Override
-    public void onError(Throwable error) {
-        log.error("Stream error", error);
-        handleError(error);
+StringBuilder buffer = new StringBuilder();
+api.chat(request, chunk -> {
+    if (chunk.getMessage() != null && chunk.getMessage().getResponse() != null) {
+        buffer.append(chunk.getMessage().getResponse());
     }
 });
+processFullResponse(buffer.toString());
 ```
 
 ### 4. Model Validation
@@ -638,11 +612,11 @@ private boolean ensureModelExists(String modelName) {
 public String chat(String message) {
     try {
         OllamaChatRequest request = OllamaChatRequest.builder()
-            .model("llama3.1")
-            .message("user", message)
+            .withModel("llama3.1")
+            .withMessage(OllamaChatMessageRole.USER, message)
             .build();
 
-        return api.chat(request).getMessage().getContent();
+        return api.chat(request, token -> {}).getResponseModel().getMessage().getResponse();
 
     } catch (OllamaException e) {
         log.error("Ollama error", e);
