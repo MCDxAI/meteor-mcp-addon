@@ -62,9 +62,9 @@ include(implementation("io.github.ollama4j:ollama4j:1.1.4")!!)
 
 ### Initialize Client
 ```java
-import io.github.ollama4j.OllamaAPI;
+import io.github.ollama4j.Ollama;
 
-OllamaAPI api = new OllamaAPI("http://localhost:11434");
+Ollama api = new Ollama("http://localhost:11434");
 ```
 
 ### Simple Chat
@@ -335,11 +335,11 @@ future.thenAccept(result -> {
 ### 1. Reuse API Instance
 ```java
 // Good
-private static final OllamaAPI api = new OllamaAPI();
+private static final Ollama api = new Ollama();
 
 // Bad
 public void chat() {
-    OllamaAPI api = new OllamaAPI();  // Creates new instance every call
+    Ollama api = new Ollama();  // Creates new instance every call
 }
 ```
 
@@ -389,7 +389,7 @@ try {
 ```java
 public boolean isOllamaRunning() {
     try {
-        OllamaAPI api = new OllamaAPI();
+        Ollama api = new Ollama();
         api.listModels();
         return true;
     } catch (ConnectionException e) {
@@ -401,7 +401,7 @@ public boolean isOllamaRunning() {
 ### Test Chat
 ```java
 public void testChat() {
-    OllamaAPI api = new OllamaAPI();
+    Ollama api = new Ollama();
 
     OllamaChatRequest request = OllamaChatRequest.builder()
         .model("llama3.1")

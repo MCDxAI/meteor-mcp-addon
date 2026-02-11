@@ -20,12 +20,15 @@ import io.modelcontextprotocol.spec.McpSchema.Tool;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Executes Ollama requests, bridging responses to MCP tool invocations when required.
  * Mirrors the structure of {@link com.cope.meteormcp.gemini.GeminiExecutor}.
  */
 public final class OllamaExecutor {
+
+    private static final ReentrantLock toolLock = new ReentrantLock();
 
     private static final String SYSTEM_PROMPT =
         "You are a concise assistant inside Minecraft. Keep responses short and to the point — "
@@ -47,6 +50,7 @@ public final class OllamaExecutor {
         }
 
         try {
+            OllamaClientManager.ensureMapperCompatibility();
             Ollama api = manager.getClient();
             OllamaConfig config = MCPServers.get().getAIConfig().getOllamaConfig();
 
@@ -108,7 +112,9 @@ public final class OllamaExecutor {
             return new MCPResult(executeSimplePrompt(prompt), toolHistory);
         }
 
+        toolLock.lock();
         try {
+            OllamaClientManager.ensureMapperCompatibility();
             Ollama api = manager.getClient();
 
             // Clear any previously registered tools
@@ -187,6 +193,8 @@ public final class OllamaExecutor {
         } catch (Exception e) {
             MeteorMCPAddon.LOG.error("Ollama MCP execution failed: {}", e.getMessage());
             return new MCPResult(formatError(e), toolHistory);
+        } finally {
+            toolLock.unlock();
         }
     }
 

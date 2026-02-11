@@ -188,7 +188,7 @@ Spring AI provides native Ollama support:
 public class OllamaConfig {
     @Bean
     public OllamaChatModel ollamaChatModel() {
-        return new OllamaChatModel(OllamaApi.create("http://localhost:11434"));
+        return new OllamaChatModel(Ollama.create("http://localhost:11434"));
     }
 }
 ```
@@ -409,20 +409,20 @@ Streaming responses are JSON objects separated by newlines (NDJSON format).
 ### Example 1: Ollama4j Basic Chat
 
 ```java
-import io.github.ollama4j.OllamaAPI;
+import io.github.ollama4j.Ollama;
 import io.github.ollama4j.models.chat.OllamaChatRequest;
 import io.github.ollama4j.models.chat.OllamaChatResult;
 
 public class OllamaChatExample {
     public static void main(String[] args) {
-        OllamaAPI ollamaAPI = new OllamaAPI("http://localhost:11434");
+        Ollama ollama = new Ollama("http://localhost:11434");
 
         OllamaChatRequest request = OllamaChatRequest.builder()
             .model("llama3.1")
             .message("user", "What is the capital of France?")
             .build();
 
-        OllamaChatResult result = ollamaAPI.chat(request);
+        OllamaChatResult result = ollama.chat(request);
         System.out.println(result.getMessage().getContent());
     }
 }
@@ -431,7 +431,7 @@ public class OllamaChatExample {
 ### Example 2: Ollama4j Tool Calling
 
 ```java
-import io.github.ollama4j.OllamaAPI;
+import io.github.ollama4j.Ollama;
 import io.github.ollama4j.tools.ToolFunction;
 import io.github.ollama4j.tools.ToolSpec;
 
@@ -444,7 +444,7 @@ public class WeatherTool extends ToolFunction {
 }
 
 // Register and use
-OllamaAPI api = new OllamaAPI("http://localhost:11434");
+Ollama api = new Ollama("http://localhost:11434");
 
 ToolSpec weatherSpec = ToolSpec.builder()
     .name("get_weather")
@@ -488,7 +488,7 @@ public class MyTools {
 }
 
 // Register all annotated tools
-OllamaAPI api = new OllamaAPI("http://localhost:11434");
+Ollama api = new Ollama("http://localhost:11434");
 api.registerAnnotatedTools(new MyTools());
 ```
 

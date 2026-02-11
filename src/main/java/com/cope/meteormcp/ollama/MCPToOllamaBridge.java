@@ -52,12 +52,7 @@ public final class MCPToOllamaBridge {
         ToolCallRoute route = ROUTING.get(functionName);
         if (route != null) return route;
 
-        String fallback = functionName != null ? functionName : "";
-        int idx = fallback.indexOf('_');
-        if (idx <= 0 || idx == fallback.length() - 1) {
-            throw new IllegalArgumentException("Cannot resolve Ollama function route: " + functionName);
-        }
-        return new ToolCallRoute(fallback.substring(0, idx), fallback.substring(idx + 1));
+        throw new IllegalArgumentException("Cannot resolve Ollama function route: " + functionName);
     }
 
     public record ToolCallRoute(String serverName, String toolName) {}

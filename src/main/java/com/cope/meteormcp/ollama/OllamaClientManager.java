@@ -1,5 +1,6 @@
 package com.cope.meteormcp.ollama;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.cope.meteormcp.MeteorMCPAddon;
 import com.cope.meteormcp.systems.MCPServers;
 import com.cope.meteormcp.systems.OllamaConfig;
@@ -7,10 +8,12 @@ import io.github.ollama4j.Ollama;
 import io.github.ollama4j.models.chat.OllamaChatMessageRole;
 import io.github.ollama4j.models.chat.OllamaChatRequest;
 import io.github.ollama4j.models.chat.OllamaChatResult;
+import io.github.ollama4j.utils.Utils;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -20,6 +23,7 @@ import java.util.stream.Collectors;
  */
 public final class OllamaClientManager {
     private static final OllamaClientManager INSTANCE = new OllamaClientManager();
+    private static final AtomicBoolean mapperConfigured = new AtomicBoolean(false);
 
     private final ReentrantLock clientLock = new ReentrantLock();
 
@@ -71,6 +75,12 @@ public final class OllamaClientManager {
 
     public void shutdown() {
         invalidateClient();
+    }
+
+    static void ensureMapperCompatibility() {
+        if (mapperConfigured.compareAndSet(false, true)) {
+            Utils.getObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        }
     }
 
     /**
@@ -134,7 +144,7 @@ public final class OllamaClientManager {
                 .build();
 
             long start = System.currentTimeMillis();
-            OllamaChatResult result = tempApi.chat(request, null);
+            OllamaChatResult result = tempApi.chat(request, token -> {});
             long elapsed = System.currentTimeMillis() - start;
 
             String text = result.getResponseModel().getMessage().getResponse();
@@ -169,6 +179,8 @@ public final class OllamaClientManager {
     }
 
     private Ollama buildClient(OllamaConfig config) {
+        ensureMapperCompatibility();
+
         Ollama api = new Ollama(config.getHost());
         api.setRequestTimeoutSeconds(60);
         return api;

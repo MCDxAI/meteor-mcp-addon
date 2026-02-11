@@ -2,6 +2,9 @@ package com.cope.meteormcp.systems;
 
 import net.minecraft.nbt.NbtCompound;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
@@ -12,6 +15,7 @@ public class OllamaConfig {
 
     /** Valid keep-alive presets shown in the settings dropdown. */
     public static final String[] KEEP_ALIVE_OPTIONS = {"5m", "10m", "30m", "1h", "-1"};
+    private static final String DEFAULT_HOST = "http://localhost:11434";
 
     private static final Set<String> VALID_KEEP_ALIVE = Set.of(
         "0m", "1m", "5m", "10m", "30m", "1h", "2h", "-1"
@@ -26,7 +30,7 @@ public class OllamaConfig {
     private String keepAlive;
 
     public OllamaConfig() {
-        this.host = "http://localhost:11434";
+        this.host = DEFAULT_HOST;
         this.model = "llama3.1";
         this.contextLength = 8192;
         this.maxOutputTokens = 2048;
@@ -62,7 +66,7 @@ public class OllamaConfig {
     }
 
     public void setHost(String host) {
-        this.host = host != null ? host.trim() : "http://localhost:11434";
+        this.host = normalizeHost(host);
     }
 
     public String getModel() {
@@ -118,6 +122,38 @@ public class OllamaConfig {
             this.keepAlive = keepAlive.trim();
         } else {
             this.keepAlive = "5m";
+        }
+    }
+
+    private static String normalizeHost(String host) {
+        if (host == null) return DEFAULT_HOST;
+
+        String candidate = host.trim();
+        if (candidate.isEmpty()) return DEFAULT_HOST;
+
+        try {
+            URI parsed = new URI(candidate);
+
+            String scheme = parsed.getScheme();
+            String hostName = parsed.getHost();
+            int port = parsed.getPort();
+            String path = parsed.getPath();
+
+            if (scheme == null || hostName == null) return DEFAULT_HOST;
+            if (parsed.getRawUserInfo() != null) return DEFAULT_HOST;
+            if (parsed.getRawQuery() != null || parsed.getRawFragment() != null) return DEFAULT_HOST;
+            if (port < -1 || port > 65535) return DEFAULT_HOST;
+
+            String normalizedScheme = scheme.toLowerCase(Locale.ROOT);
+            if (!normalizedScheme.equals("http") && !normalizedScheme.equals("https")) return DEFAULT_HOST;
+
+            // Allow optional trailing slash, reject any concrete path segments.
+            if (path != null && !path.isEmpty() && !path.equals("/")) return DEFAULT_HOST;
+
+            URI normalized = new URI(normalizedScheme, null, hostName, port, null, null, null);
+            return normalized.toString();
+        } catch (URISyntaxException | IllegalArgumentException ignored) {
+            return DEFAULT_HOST;
         }
     }
 

@@ -21,7 +21,17 @@
       "Bash(./gradlew clean build:*)",
       "WebFetch(domain:github.com)",
       "Bash(./gradlew.bat clean:*)",
-      "Skill(repo-sweep)"
+      "Skill(repo-sweep)",
+      "mcp__gradle-mcp-server__gradle_build",
+      "WebFetch(domain:docs.ollama.com)",
+      "WebFetch(domain:ollama4j.github.io)",
+      "WebFetch(domain:javadoc.io)",
+      "Bash(.gradlew dependencies --configuration compileClasspath)",
+      "mcp__gradle-mcp-server__gradle_dependencies",
+      "Bash(where /r \"%USERPROFILE%\\\\.gradle\" \"ollama4j*1.1.4*.jar\")",
+      "Bash(jar tf:*)",
+      "Bash(javap:*)",
+      "Bash(git clone:*)"
     ],
     "deny": [],
     "ask": []

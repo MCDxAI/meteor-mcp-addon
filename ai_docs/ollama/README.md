@@ -18,7 +18,7 @@ This directory contains complete documentation for integrating Ollama with Java 
 
 ## Documents in this Directory
 
-### 1. [ollama-java-integration.md](C:\Users\Cope\Documents\GitHub\meteor-mcp-addon\AI_DOCS\ollama\ollama-java-integration.md)
+### 1. [ollama-java-integration.md](./ollama-java-integration.md)
 **Comprehensive integration guide covering:**
 - Google GenAI SDK compatibility (not recommended)
 - OpenAI API compatibility (fully supported)
@@ -29,7 +29,7 @@ This directory contains complete documentation for integrating Ollama with Java 
 
 **When to read:** First time learning about Ollama Java integration
 
-### 2. [ollama4j-api-reference.md](C:\Users\Cope\Documents\GitHub\meteor-mcp-addon\AI_DOCS\ollama\ollama4j-api-reference.md)
+### 2. [ollama4j-api-reference.md](./ollama4j-api-reference.md)
 **Complete API reference for Ollama4j library:**
 - Installation (Maven/Gradle)
 - Chat API
@@ -41,7 +41,7 @@ This directory contains complete documentation for integrating Ollama with Java 
 
 **When to read:** Implementing Ollama4j in code
 
-### 3. [integration-recommendations.md](C:\Users\Cope\Documents\GitHub\meteor-mcp-addon\AI_DOCS\ollama\integration-recommendations.md)
+### 3. [integration-recommendations.md](./integration-recommendations.md)
 **Project-specific implementation guide:**
 - Architecture recommendations
 - Phase-by-phase implementation plan
@@ -53,7 +53,7 @@ This directory contains complete documentation for integrating Ollama with Java 
 
 **When to read:** Planning Ollama integration for this project
 
-### 4. [quick-reference.md](C:\Users\Cope\Documents\GitHub\meteor-mcp-addon\AI_DOCS\ollama\quick-reference.md)
+### 4. [quick-reference.md](./quick-reference.md)
 **Quick reference cheat sheet:**
 - Installation & setup commands
 - Common code snippets
@@ -89,10 +89,10 @@ dependencies {
 
 ### 4. Basic Java Code
 ```java
-import io.github.ollama4j.OllamaAPI;
+import io.github.ollama4j.Ollama;
 import io.github.ollama4j.models.chat.OllamaChatRequest;
 
-OllamaAPI api = new OllamaAPI("http://localhost:11434");
+Ollama api = new Ollama("http://localhost:11434");
 
 OllamaChatRequest request = OllamaChatRequest.builder()
     .model("llama3.1")
@@ -134,7 +134,7 @@ System.out.println(response);
 - Works with Ollama4j annotation system
 
 ### Question 5: REST API format?
-**Answer:** See [ollama-java-integration.md](C:\Users\Cope\Documents\GitHub\meteor-mcp-addon\AI_DOCS\ollama\ollama-java-integration.md#rest-api-format-for-tool-calling)
+**Answer:** See [ollama-java-integration.md](./ollama-java-integration.md#rest-api-format-for-tool-calling)
 - Native endpoint: `POST /api/chat`
 - OpenAI endpoint: `POST /v1/chat/completions`
 - Streaming enabled by default
@@ -164,7 +164,7 @@ public class OllamaConfig {
 ### Phase 3: Create Executor
 ```java
 public class OllamaExecutor {
-    private final OllamaAPI api;
+    private final Ollama api;
 
     public String execute(String model, String prompt) { ... }
     public String executeWithMCP(String model, String prompt, List<MCPServerConnection> servers) { ... }
@@ -188,7 +188,7 @@ public class OllamaExecutor {
 // Meteor GUI > MCP > Ollama Settings
 ```
 
-**Full implementation details:** See [integration-recommendations.md](C:\Users\Cope\Documents\GitHub\meteor-mcp-addon\AI_DOCS\ollama\integration-recommendations.md)
+**Full implementation details:** See [integration-recommendations.md](./integration-recommendations.md)
 
 ---
 
@@ -268,7 +268,7 @@ All documentation is based on:
 
 ## Next Steps
 
-1. **Read:** [integration-recommendations.md](C:\Users\Cope\Documents\GitHub\meteor-mcp-addon\AI_DOCS\ollama\integration-recommendations.md) for full implementation plan
+1. **Read:** [integration-recommendations.md](./integration-recommendations.md) for full implementation plan
 2. **Install:** Ollama server and pull `llama3.1` model
 3. **Add:** Ollama4j dependency to `build.gradle.kts`
 4. **Implement:** Phase-by-phase following the recommendations doc

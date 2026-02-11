@@ -6,7 +6,7 @@
 
 ## Key Findings
 
-### 1. Main API Class: `Ollama` (NOT `OllamaAPI`)
+### 1. Main API Class: `Ollama`
 
 **Package**: `io.github.ollama4j.Ollama`
 
@@ -387,7 +387,7 @@ public class OllamaExample {
 
 ## Common Mistakes to Avoid
 
-1. **Wrong main class**: Use `Ollama`, NOT `OllamaAPI`
+1. **Wrong main class**: Use `Ollama`
 2. **Wrong builder method**: Use `.withModel()`, NOT `.model()`
 3. **Wrong response accessor**: Use `result.getResponseModel().getMessage().getResponse()`, NOT `result.getMessage()`
 4. **Calling build()**: Builder methods return `OllamaChatRequest` directly, no `.build()` needed
@@ -400,7 +400,7 @@ If you have code based on incorrect documentation:
 
 ```java
 // WRONG (from bad docs)
-OllamaAPI api = new OllamaAPI("http://localhost:11434");
+Ollama api = new Ollama("http://localhost:11434");
 OllamaChatRequest request = new OllamaChatRequestBuilder()
     .model("llama3.2")  // Wrong method name
     .build();  // Unnecessary

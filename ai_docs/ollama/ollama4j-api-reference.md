@@ -51,21 +51,21 @@ implementation("io.github.ollama4j:ollama4j:1.1.4")
 ### Basic Initialization
 
 ```java
-import io.github.ollama4j.OllamaAPI;
+import io.github.ollama4j.Ollama;
 
 // Default localhost:11434
-OllamaAPI api = new OllamaAPI();
+Ollama api = new Ollama();
 
 // Custom host
-OllamaAPI api = new OllamaAPI("http://192.168.1.100:11434");
+Ollama api = new Ollama("http://192.168.1.100:11434");
 ```
 
 ### With Authentication
 
 ```java
-import io.github.ollama4j.OllamaAPI;
+import io.github.ollama4j.Ollama;
 
-OllamaAPI api = new OllamaAPI("http://localhost:11434");
+Ollama api = new Ollama("http://localhost:11434");
 
 // Basic auth
 api.setBasicAuth("username", "password");
@@ -450,14 +450,14 @@ api.generateStream(request, new StreamHandler() {
 ### Basic Authentication
 
 ```java
-OllamaAPI api = new OllamaAPI("http://localhost:11434");
+Ollama api = new Ollama("http://localhost:11434");
 api.setBasicAuth("username", "password");
 ```
 
 ### Bearer Token
 
 ```java
-OllamaAPI api = new OllamaAPI("http://localhost:11434");
+Ollama api = new Ollama("http://localhost:11434");
 api.setBearerToken("your-bearer-token");
 ```
 
@@ -466,7 +466,7 @@ api.setBearerToken("your-bearer-token");
 ```java
 import java.util.Map;
 
-OllamaAPI api = new OllamaAPI("http://localhost:11434");
+Ollama api = new Ollama("http://localhost:11434");
 api.setCustomHeaders(Map.of(
     "X-Custom-Header", "value",
     "Authorization", "Bearer custom-token"
@@ -480,7 +480,7 @@ api.setCustomHeaders(Map.of(
 ### Request Timeouts
 
 ```java
-OllamaAPI api = new OllamaAPI("http://localhost:11434");
+Ollama api = new Ollama("http://localhost:11434");
 api.setRequestTimeout(60000);  // 60 seconds in milliseconds
 ```
 
@@ -526,7 +526,7 @@ OllamaChatRequest request = OllamaChatRequest.builder()
 ```java
 import io.github.ollama4j.metrics.PrometheusMetrics;
 
-OllamaAPI api = new OllamaAPI("http://localhost:11434");
+Ollama api = new Ollama("http://localhost:11434");
 
 // Enable Prometheus metrics
 PrometheusMetrics metrics = new PrometheusMetrics();
@@ -571,11 +571,11 @@ try {
 
 ```java
 // Good - reuse
-private static final OllamaAPI api = new OllamaAPI();
+private static final Ollama api = new Ollama();
 
 // Bad - creates new instance every time
-public OllamaAPI getApi() {
-    return new OllamaAPI();
+public Ollama getApi() {
+    return new Ollama();
 }
 ```
 

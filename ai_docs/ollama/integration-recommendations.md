@@ -131,7 +131,7 @@ Create a separate, parallel system for Ollama:
 ```
 OllamaConfig (NBT-persisted, separate from GeminiConfig)
     ↓
-OllamaClientManager (wraps OllamaAPI instance)
+OllamaClientManager (wraps Ollama instance)
     ↓
 OllamaExecutor (manual function calling loop, similar to GeminiExecutor)
     ↓
@@ -224,10 +224,10 @@ public class MCPServers extends System<MCPServers> {
 **OllamaExecutor.java:**
 ```java
 public class OllamaExecutor {
-    private final OllamaAPI api;
+    private final Ollama api;
 
     public OllamaExecutor(String host) {
-        this.api = new OllamaAPI(host);
+        this.api = new Ollama(host);
     }
 
     // Simple prompt (no tools)
@@ -454,7 +454,7 @@ public class OllamaSettingsScreen extends WindowScreen {
     }
 
     private void testConnection() {
-        OllamaAPI api = new OllamaAPI(hostInput.get());
+        Ollama api = new Ollama(hostInput.get());
 
         MeteorExecutor.execute(() -> {
             try {
@@ -603,7 +603,7 @@ AI: {if(config.gemini_enabled, gemini("Hello"), ollama("Hello"))}
 ```java
 @Test
 public void testOllamaConnection() {
-    OllamaAPI api = new OllamaAPI("http://localhost:11434");
+    Ollama api = new Ollama("http://localhost:11434");
     List<Model> models = api.listModels();
     assertFalse(models.isEmpty());
 }
@@ -668,14 +668,14 @@ return Value.string("Loading...");
 
 ### Connection Pooling
 ```java
-// Reuse OllamaAPI instance (it's thread-safe)
+// Reuse Ollama instance (it's thread-safe)
 public class OllamaClientManager {
-    private static OllamaAPI cachedApi;
+    private static Ollama cachedApi;
     private static String cachedHost;
 
-    public static OllamaAPI getClient(String host) {
+    public static Ollama getClient(String host) {
         if (cachedApi == null || !host.equals(cachedHost)) {
-            cachedApi = new OllamaAPI(host);
+            cachedApi = new Ollama(host);
             cachedHost = host;
         }
         return cachedApi;

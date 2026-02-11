@@ -1,5 +1,6 @@
 package com.cope.meteormcp.gui.screens;
 
+import com.cope.meteormcp.gui.MaskedTextBoxRenderer;
 import com.cope.meteormcp.llm.LLMProvider;
 import com.cope.meteormcp.llm.LLMProviderManager;
 import com.cope.meteormcp.ollama.OllamaClientManager;
@@ -135,7 +136,8 @@ public class AISettingsScreen extends WindowScreen {
 
     private void initGeminiWidgets() {
         add(theme.label("Gemini API Key:"));
-        geminiApiKeyInput = add(theme.textBox(editedGemini.getApiKey())).expandX().widget();
+        geminiApiKeyInput = add(theme.textBox(editedGemini.getApiKey(),
+            (text, c) -> true, MaskedTextBoxRenderer.class)).expandX().widget();
 
         add(theme.label("Model:"));
         geminiModelDropdown = add(theme.dropdown(GeminiModel.values(), editedGemini.getModel()))
