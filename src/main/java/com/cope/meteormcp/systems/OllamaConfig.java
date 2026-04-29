@@ -1,6 +1,6 @@
 package com.cope.meteormcp.systems;
 
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -159,8 +159,8 @@ public class OllamaConfig {
 
     // ---- NBT persistence ----
 
-    public NbtCompound toTag() {
-        NbtCompound tag = new NbtCompound();
+    public CompoundTag toTag() {
+        CompoundTag tag = new CompoundTag();
         tag.putString("host", host != null ? host : "");
         tag.putString("model", model != null ? model : "");
         tag.putInt("context_length", contextLength);
@@ -171,7 +171,7 @@ public class OllamaConfig {
         return tag;
     }
 
-    public static OllamaConfig fromTag(NbtCompound tag) {
+    public static OllamaConfig fromTag(CompoundTag tag) {
         OllamaConfig config = new OllamaConfig();
         if (tag == null) return config;
 

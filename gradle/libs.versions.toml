@@ -1,19 +1,19 @@
 [versions]
-mod-version = "0.2.0"
+mod-version = "0.3.0"
 
 # Fabric (https://fabricmc.net/develop)
-minecraft = "1.21.11"
-yarn-mappings = "1.21.11+build.3"
-fabric-loader = "0.18.2"
+jdk = "25"
+minecraft = "26.1.2"
+fabric-loader = "0.19.2"
 
 # Loom (https://github.com/FabricMC/fabric-loom)
-loom = "1.14-SNAPSHOT"
+loom = "1.16-SNAPSHOT"
 
 # Meteor (https://github.com/MeteorDevelopment/meteor-client/)
-meteor = "1.21.11-SNAPSHOT"
+meteor = "26.1.2-SNAPSHOT"
 
 # MCP SDK (https://github.com/modelcontextprotocol/java-sdk)
-mcp = "0.14.1"
+mcp = "1.1.1"
 
 # Gemini AI (https://github.com/googleapis/java-genai)
 gemini = "1.23.0"
@@ -31,24 +31,21 @@ kotlin-stdlib = "1.9.10"
 prometheus-simpleclient = "0.16.0"
 jackson = "2.18.3"
 junit = "5.10.2"
-starscript = "0.2.3"
+starscript = "0.2.5"
 
 [libraries]
 # Fabric base
 minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
-yarn = { module = "net.fabricmc:yarn", version.ref = "yarn-mappings" }
 fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
 
 # Meteor client
 meteor-client = { module = "meteordevelopment:meteor-client", version.ref = "meteor" }
 
-# StarScript (separate dependency, not bundled in Meteor)
+# StarScript (compile dependency; runtime is provided by Meteor)
 starscript = { module = "org.meteordev:starscript", version.ref = "starscript" }
 
 # MCP SDK
-mcp = { module = "io.modelcontextprotocol.sdk:mcp", version.ref = "mcp" }
 mcpCore = { module = "io.modelcontextprotocol.sdk:mcp-core", version.ref = "mcp" }
-mcpJson = { module = "io.modelcontextprotocol.sdk:mcp-json", version.ref = "mcp" }
 mcpJsonJackson2 = { module = "io.modelcontextprotocol.sdk:mcp-json-jackson2", version.ref = "mcp" }
 
 # Reactor
@@ -83,4 +80,4 @@ junitEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref =
 junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher" }
 
 [plugins]
-fabric-loom = { id = "fabric-loom", version.ref = "loom" }
+fabric-loom = { id = "net.fabricmc.fabric-loom", version.ref = "loom" }

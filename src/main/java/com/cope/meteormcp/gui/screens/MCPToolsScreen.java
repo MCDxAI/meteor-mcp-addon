@@ -9,7 +9,9 @@ import meteordevelopment.meteorclient.gui.widgets.containers.WSection;
 import meteordevelopment.meteorclient.gui.widgets.containers.WTable;
 import meteordevelopment.meteorclient.gui.widgets.pressable.WButton;
 import meteordevelopment.meteorclient.utils.render.color.Color;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screens.Screen;
+
+import static meteordevelopment.meteorclient.MeteorClient.mc;
 
 import java.util.List;
 
@@ -39,7 +41,7 @@ public class MCPToolsScreen extends WindowScreen {
 
         // Back button
         WButton backBtn = add(theme.button("Back")).expandX().widget();
-        backBtn.action = () -> client.setScreen(parent);
+        backBtn.action = () -> mc.setScreen(parent);
 
         add(theme.horizontalSeparator()).expandX();
 
@@ -96,7 +98,7 @@ public class MCPToolsScreen extends WindowScreen {
                 WButton copyBtn = section.add(theme.button("Copy StarScript Syntax")).expandX().widget();
                 final String syntaxToCopy = example;
                 copyBtn.action = () -> {
-                    client.keyboard.setClipboard(syntaxToCopy);
+                    mc.keyboardHandler.setClipboard(syntaxToCopy);
                 };
             }
         }

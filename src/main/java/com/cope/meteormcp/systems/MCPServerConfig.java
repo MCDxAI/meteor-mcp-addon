@@ -1,9 +1,9 @@
 package com.cope.meteormcp.systems;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 
 import java.util.*;
 
@@ -77,8 +77,8 @@ public class MCPServerConfig {
      *
      * @return NBT tag containing the serialized configuration
      */
-    public NbtCompound toTag() {
-        NbtCompound tag = new NbtCompound();
+    public CompoundTag toTag() {
+        CompoundTag tag = new CompoundTag();
 
         tag.putString("name", name);
         tag.putString("transport", transport.name());
@@ -99,16 +99,16 @@ public class MCPServerConfig {
 
         // Serialize args list
         if (args != null && !args.isEmpty()) {
-            NbtList argsList = new NbtList();
+            ListTag argsList = new ListTag();
             for (String arg : args) {
-                argsList.add(NbtString.of(arg));
+                argsList.add(StringTag.valueOf(arg));
             }
             tag.put("args", argsList);
         }
 
         // Serialize env map
         if (env != null && !env.isEmpty()) {
-            NbtCompound envTag = new NbtCompound();
+            CompoundTag envTag = new CompoundTag();
             for (Map.Entry<String, String> entry : env.entrySet()) {
                 envTag.putString(entry.getKey(), entry.getValue());
             }
@@ -124,7 +124,7 @@ public class MCPServerConfig {
      * @param tag serialized configuration tag
      * @return deserialized configuration instance
      */
-    public static MCPServerConfig fromTag(NbtCompound tag) {
+    public static MCPServerConfig fromTag(CompoundTag tag) {
         if (tag.getString("name").isEmpty() || tag.getString("transport").isEmpty()) {
             throw new RuntimeException("Invalid MCPServerConfig NBT: missing required fields");
         }
@@ -142,10 +142,10 @@ public class MCPServerConfig {
 
         // Deserialize args list
         if (tag.contains("args")) {
-            NbtElement element = tag.get("args");
-            if (element instanceof NbtList argsList) {
+            Tag element = tag.get("args");
+            if (element instanceof ListTag argsList) {
                 List<String> args = new ArrayList<>();
-                for (NbtElement argElement : argsList) {
+                for (Tag argElement : argsList) {
                     argElement.asString().ifPresent(args::add);
                 }
                 config.setArgs(args);
@@ -154,10 +154,10 @@ public class MCPServerConfig {
 
         // Deserialize env map (using old approach)
         if (tag.contains("env")) {
-            NbtCompound envTag = tag.getCompound("env").orElse(null);
+            CompoundTag envTag = tag.getCompound("env").orElse(null);
             if (envTag != null) {
                 Map<String, String> env = new HashMap<>();
-                for (String key : envTag.getKeys()) {
+                for (String key : envTag.keySet()) {
                     envTag.getString(key).ifPresent(value -> env.put(key, value));
                 }
                 config.setEnv(env);

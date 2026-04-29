@@ -4,7 +4,7 @@ import com.cope.meteormcp.gui.screens.MCPServersScreen;
 import meteordevelopment.meteorclient.gui.GuiTheme;
 import meteordevelopment.meteorclient.gui.tabs.Tab;
 import meteordevelopment.meteorclient.gui.tabs.TabScreen;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screens.Screen;
 
 /**
  * MCP tab registration for Meteor Client GUI.

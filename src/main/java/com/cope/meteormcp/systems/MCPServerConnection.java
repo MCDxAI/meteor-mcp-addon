@@ -15,7 +15,7 @@ import io.modelcontextprotocol.spec.McpSchema.Tool;
 import java.time.Duration;
 import java.util.*;
 
-import io.modelcontextprotocol.json.McpJsonMapper;
+import io.modelcontextprotocol.json.McpJsonDefaults;
 
 /**
  * Wrapper around MCP Java SDK Client.
@@ -137,7 +137,7 @@ public class MCPServerConnection {
             ServerParameters params = paramsBuilder.build();
 
             // Create STDIO transport
-            transport = new StdioClientTransport(params, McpJsonMapper.getDefault());
+            transport = new StdioClientTransport(params, McpJsonDefaults.getMapper());
 
             // Build sync client
             client = McpClient.sync(transport)

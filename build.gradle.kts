@@ -1,24 +1,14 @@
-import org.gradle.api.artifacts.MinimalExternalModuleDependency
-import org.gradle.api.artifacts.dsl.DependencyHandler
-import org.gradle.api.provider.Provider
-
 plugins {
     alias(libs.plugins.fabric.loom)
 }
 
-fun DependencyHandler.modInclude(dependencyProvider: Provider<out MinimalExternalModuleDependency>) {
-    modImplementation(dependencyProvider)
-    include(dependencyProvider)
-}
-
 base {
     archivesName = properties["archives_base_name"] as String
-    version = libs.versions.mod.version.get()
     group = properties["maven_group"] as String
+    version = libs.versions.mod.version.get()
 }
 
 repositories {
-    mavenCentral()
     maven {
         name = "meteor-maven"
         url = uri("https://maven.meteordev.org/releases")
@@ -27,24 +17,29 @@ repositories {
         name = "meteor-maven-snapshots"
         url = uri("https://maven.meteordev.org/snapshots")
     }
+    mavenCentral()
+}
+
+val modInclude: Configuration by configurations.creating
+
+configurations {
+    implementation.configure { extendsFrom(modInclude) }
+    include.configure { extendsFrom(modInclude) }
 }
 
 dependencies {
     // Fabric
     minecraft(libs.minecraft)
-    mappings(variantOf(libs.yarn) { classifier("v2") })
-    modImplementation(libs.fabric.loader)
+    implementation(libs.fabric.loader)
 
     // Meteor
-    modImplementation(libs.meteor.client)
+    implementation(libs.meteor.client)
 
-    // StarScript (separate dependency, not bundled in Meteor)
+    // StarScript (separate compile dependency, runtime provided by Meteor)
     implementation(libs.starscript)
 
     // MCP SDK
-    modInclude(libs.mcp)
     modInclude(libs.mcpCore)
-    modInclude(libs.mcpJson)
     modInclude(libs.mcpJsonJackson2)
 
     modInclude(libs.reactiveStreams)
@@ -74,6 +69,12 @@ dependencies {
     testRuntimeOnly(libs.junitPlatformLauncher)
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get().toInt()))
+    }
+}
+
 tasks {
     processResources {
         val propertyMap = mapOf(
@@ -98,14 +99,9 @@ tasks {
         }
     }
 
-    java {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-
     withType<JavaCompile> {
         options.encoding = "UTF-8"
-        options.release = 21
+        options.release = 25
         options.compilerArgs.add("-Xlint:deprecation")
         options.compilerArgs.add("-Xlint:unchecked")
     }

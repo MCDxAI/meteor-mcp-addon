@@ -1,6 +1,6 @@
 package com.cope.meteormcp.systems;
 
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -77,15 +77,15 @@ public class AIConfig {
 
     // ---- NBT persistence ----
 
-    public NbtCompound toTag() {
-        NbtCompound tag = new NbtCompound();
+    public CompoundTag toTag() {
+        CompoundTag tag = new CompoundTag();
         tag.putString("provider", activeProvider.name());
         tag.put("gemini", geminiConfig.toTag());
         tag.put("ollama", ollamaConfig.toTag());
         return tag;
     }
 
-    public static AIConfig fromTag(NbtCompound tag) {
+    public static AIConfig fromTag(CompoundTag tag) {
         AIConfig config = new AIConfig();
         if (tag == null) return config;
 
@@ -104,7 +104,7 @@ public class AIConfig {
      * Migrate from old saves that only had a top-level "gemini" tag.
      * Creates an AIConfig with the old Gemini config and defaults for everything else.
      */
-    public static AIConfig migrateFromGeminiTag(NbtCompound geminiTag) {
+    public static AIConfig migrateFromGeminiTag(CompoundTag geminiTag) {
         AIConfig config = new AIConfig();
         config.activeProvider = ProviderType.GEMINI;
         config.geminiConfig = GeminiConfig.fromTag(geminiTag);

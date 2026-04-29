@@ -10,7 +10,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import meteordevelopment.meteorclient.commands.Command;
 import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
-import net.minecraft.command.CommandSource;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 
 /**
  * Simple AI prompt command without MCP tool access.
@@ -25,7 +25,7 @@ public class AICommand extends Command {
     }
 
     @Override
-    public void build(LiteralArgumentBuilder<CommandSource> builder) {
+    public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
         builder.then(argument("prompt", StringArgumentType.greedyString())
             .executes(context -> executeAI(context.getArgument("prompt", String.class)))
         );
@@ -61,7 +61,7 @@ public class AICommand extends Command {
             return true;
         }
 
-        UUID playerId = mc.player.getUuid();
+        UUID playerId = mc.player.getUUID();
         long now = System.currentTimeMillis();
         Long last = LAST_CALL_TIME.get(playerId);
 

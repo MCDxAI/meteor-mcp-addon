@@ -16,7 +16,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import meteordevelopment.meteorclient.commands.Command;
 import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
-import net.minecraft.command.CommandSource;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 
@@ -41,7 +41,7 @@ public class MCPToolCommand extends Command {
     }
 
     @Override
-    public void build(LiteralArgumentBuilder<CommandSource> builder) {
+    public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
         builder.then(literal("help").executes(context -> {
             showHelp();
             return SINGLE_SUCCESS;
@@ -115,7 +115,7 @@ public class MCPToolCommand extends Command {
         return builder.buildFuture();
     }
 
-    private CompletableFuture<Suggestions> suggestArguments(com.mojang.brigadier.context.CommandContext<CommandSource> context, SuggestionsBuilder builder) {
+    private CompletableFuture<Suggestions> suggestArguments(com.mojang.brigadier.context.CommandContext<ClientSuggestionProvider> context, SuggestionsBuilder builder) {
         return suggestArguments(builder);
     }
 

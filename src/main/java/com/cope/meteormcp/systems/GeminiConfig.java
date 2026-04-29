@@ -1,6 +1,6 @@
 package com.cope.meteormcp.systems;
 
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -94,8 +94,8 @@ public class GeminiConfig {
         return model != null ? model.getId() : GeminiModel.GEMINI_2_5_FLASH.getId();
     }
 
-    public NbtCompound toTag() {
-        NbtCompound tag = new NbtCompound();
+    public CompoundTag toTag() {
+        CompoundTag tag = new CompoundTag();
 
         if (apiKey != null && !apiKey.isEmpty()) {
             tag.putString("api_key", encode(apiKey));
@@ -109,7 +109,7 @@ public class GeminiConfig {
         return tag;
     }
 
-    public static GeminiConfig fromTag(NbtCompound tag) {
+    public static GeminiConfig fromTag(CompoundTag tag) {
         GeminiConfig config = new GeminiConfig();
 
         if (tag == null) {

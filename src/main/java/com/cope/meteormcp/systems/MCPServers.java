@@ -10,10 +10,10 @@ import meteordevelopment.meteorclient.commands.Command;
 import meteordevelopment.meteorclient.commands.Commands;
 import meteordevelopment.meteorclient.systems.System;
 import meteordevelopment.meteorclient.systems.Systems;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.command.CommandSource;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -370,7 +370,7 @@ public class MCPServers extends System<MCPServers> {
     private void refreshCommandRegistry() {
         Commands.COMMANDS.sort(Comparator.comparing(Command::getName));
 
-        CommandDispatcher<CommandSource> dispatcher = new CommandDispatcher<>();
+        CommandDispatcher<ClientSuggestionProvider> dispatcher = new CommandDispatcher<>();
         for (Command command : Commands.COMMANDS) {
             command.registerTo(dispatcher);
         }
@@ -378,10 +378,10 @@ public class MCPServers extends System<MCPServers> {
     }
 
     @Override
-    public NbtCompound toTag() {
-        NbtCompound tag = new NbtCompound();
+    public CompoundTag toTag() {
+        CompoundTag tag = new CompoundTag();
 
-        NbtList serversList = new NbtList();
+        ListTag serversList = new ListTag();
         for (MCPServerConfig config : configs.values()) {
             serversList.add(config.toTag());
         }
@@ -392,13 +392,13 @@ public class MCPServers extends System<MCPServers> {
     }
 
     @Override
-    public MCPServers fromTag(NbtCompound tag) {
+    public MCPServers fromTag(CompoundTag tag) {
         if (tag.contains("servers")) {
-            NbtElement element = tag.get("servers");
-            if (element instanceof NbtList serversList) {
-                for (NbtElement serverElement : serversList) {
+            Tag element = tag.get("servers");
+            if (element instanceof ListTag serversList) {
+                for (Tag serverElement : serversList) {
                     try {
-                        if (serverElement instanceof NbtCompound serverTag) {
+                        if (serverElement instanceof CompoundTag serverTag) {
                             MCPServerConfig config = MCPServerConfig.fromTag(serverTag);
                             configs.put(config.getName(), config);
                         }

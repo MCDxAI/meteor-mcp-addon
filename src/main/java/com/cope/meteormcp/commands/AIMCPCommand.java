@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import meteordevelopment.meteorclient.commands.Command;
 import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
-import net.minecraft.command.CommandSource;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 
 /**
  * AI prompt command that exposes all connected MCP tools.
@@ -28,7 +28,7 @@ public class AIMCPCommand extends Command {
     }
 
     @Override
-    public void build(LiteralArgumentBuilder<CommandSource> builder) {
+    public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
         builder.then(argument("prompt", StringArgumentType.greedyString())
             .executes(context -> executeAIMCP(context.getArgument("prompt", String.class)))
         );
