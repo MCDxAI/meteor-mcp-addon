@@ -4,13 +4,13 @@
 
   <p>
     <img src="https://img.shields.io/badge/Meteor_Client-Latest-8a11b6?style=flat" alt="Meteor Client">    
-    <img src="https://img.shields.io/badge/Minecraft-1.21.11-00800f?style=flat" alt="Minecraft">
-    <img src="https://img.shields.io/badge/Fabric-0.18.2-3d5dff?style=flat" alt="Fabric">
-    <img src="https://img.shields.io/badge/Java-21-e28655?style=flat" alt="Java">
+    <img src="https://img.shields.io/badge/Minecraft-26.1.2-00800f?style=flat" alt="Minecraft">
+    <img src="https://img.shields.io/badge/Fabric-0.19.2-3d5dff?style=flat" alt="Fabric">
+    <img src="https://img.shields.io/badge/Java-25-e28655?style=flat" alt="Java">
   </p>
 
 <p>
-    <img src="https://img.shields.io/badge/modelcontextprotocol/java--sdk-0.14.1-e28655?style=flat" alt="MCP">
+    <img src="https://img.shields.io/badge/modelcontextprotocol/java--sdk-1.1.1-e28655?style=flat" alt="MCP">
     <img src="https://img.shields.io/badge/googleapis/java--genai-1.21.0-e28655?style=flat" alt="Gemini">
 </p>
 
