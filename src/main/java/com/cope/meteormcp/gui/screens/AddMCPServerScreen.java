@@ -79,7 +79,7 @@ public class AddMCPServerScreen extends WindowScreen {
         saveBtn.action = this::save;
 
         WButton cancelBtn = buttons.add(theme.button("Cancel")).expandX().widget();
-        cancelBtn.action = () -> mc.setScreen(parent);
+        cancelBtn.action = () -> mc.gui.setScreen(parent);
     }
 
     private void save() {
@@ -147,7 +147,7 @@ public class AddMCPServerScreen extends WindowScreen {
 
         // Add to system
         if (MCPServers.get().add(config)) {
-            mc.setScreen(parent);
+            mc.gui.setScreen(parent);
             if (parent != null) {
                 parent.reload();
             }

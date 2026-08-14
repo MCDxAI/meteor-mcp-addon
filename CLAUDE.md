@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a **Meteor Client addon** that bridges the **Model Context Protocol (MCP)** with **Minecraft** via **StarScript**. It enables:
 - MCP servers to run and expose tools inside Minecraft
 - StarScript expressions to call MCP tools in real-time (e.g., HUD elements, chat macros, Discord presence)
-- Gemini AI integration to intelligently use MCP tools from within Minecraft
+- AI provider integration (Gemini + Ollama) to intelligently use MCP tools from within Minecraft
 - Chat commands for direct MCP tool invocation and AI-powered conversations
 
 ### Current Status
@@ -16,9 +16,9 @@ This is a **Meteor Client addon** that bridges the **Model Context Protocol (MCP
 - ✅ **MCP Integration**: Full STDIO transport support with server management, tool discovery, and execution
 - ✅ **StarScript Integration**: Dynamic tool registration, argument conversion, result handling
 - ✅ **Async Execution**: Zero-blocking MCP calls via background threads (60+ FPS guaranteed)
-- ✅ **Gemini AI Integration**: Multi-turn conversations with automatic MCP tool calling
-- ✅ **Chat Commands**: Dynamic `.server:tool`, `.gemini`, and `.gemini-mcp` with help system
-- ✅ **GUI System**: Complete configuration screens for servers, tools, and Gemini settings
+- ✅ **AI Provider Integration**: Gemini + Ollama with multi-turn conversations and automatic MCP tool calling
+- ✅ **Chat Commands**: Dynamic `.server:tool`, `.ai`, and `.ai-mcp` with help system
+- ✅ **GUI System**: Complete configuration screens for servers, tools, and AI settings
 - ✅ **Persistence**: NBT-based storage for all configurations
 
 ### Performance Characteristics
@@ -41,28 +41,35 @@ This is a **Meteor Client addon** that bridges the **Model Context Protocol (MCP
 ## Technology Stack
 
 ### Core Dependencies
-- **Java 21**: Target and source compatibility
-- **Minecraft 1.21.10** with **Fabric Loader 0.17.3**
-- **Meteor Client 1.21.10-32**: Bundled locally in `libs/` for development
-- **Gradle 8.x** with Kotlin DSL (`build.gradle.kts`)
+- **JDK 25**: Target and source compatibility
+- **Minecraft 26.1.2** with **Fabric Loader 0.19.2**
+- **Fabric Loom 1.16** (Gradle plugin)
+- **Meteor Client 26.1.2-SNAPSHOT**: Via Maven repository
+- **Gradle 9.4.1** with Kotlin DSL (`build.gradle.kts`)
+- Uses `modInclude` configuration pattern for dependency bundling
 
 ### MCP Integration
-- **MCP Java SDK 0.14.1** (`io.modelcontextprotocol.sdk:mcp`)
-  - `mcp-core`, `mcp-json`, `mcp-json-jackson2` modules
+- **MCP SDK 1.1.1** (`io.modelcontextprotocol.sdk`)
+  - `mcp-core`, `mcp-json-jackson2` modules
   - STDIO transport (fully implemented)
   - SSE/HTTP transport (planned for future release)
 - **Reactor Core 3.6.5**: Reactive streams for async MCP communication
 - **JSON Schema Validator 1.5.7**: Schema validation for MCP tool definitions
 
 ### Meteor Ecosystem
-- **StarScript 0.2.3** (`org.meteordev:starscript`): Expression language for dynamic text/macros
+- **StarScript 0.2.5** (`org.meteordev:starscript`): Expression language for dynamic text/macros
 - **Meteor Systems**: Persistent NBT-based configuration storage
 
-### Gemini AI Integration
+### AI Providers
+- **Gemini AI**: `com.google.genai:google-genai:1.23.0` bundled and shaded into the addon
+- **Ollama**: `io.github.ollama4j:ollama4j:1.1.4` for local AI model support
+
+### Provider Architecture
 - **Google GenAI Java SDK** (`com.google.genai:google-genai:1.23.0`) bundled and shaded into the addon.
+- **Ollama Integration**: Local AI model support via `ollama4j`.
 - **Client Management**: `GeminiClientManager` handles API key caching, client lifecycle, and test connections.
 - **Execution Flow**: `GeminiExecutor` supports simple prompts and multi-turn MCP-enhanced loops via manual function calling.
-- **StarScript Helpers**: `GeminiStarScriptIntegration` exposes `{gemini()}` and `{gemini_mcp()}` for in-game usage.
+- **StarScript Helpers**: `AIStarScriptIntegration` exposes `{ai()}` and `{ai_mcp()}` for in-game usage.
 
 ## Development Commands
 
@@ -115,7 +122,7 @@ MCPToolExecutor.execute()
 
 #### Core Components
 - **`MeteorMCPAddon.java`**: Entry point, plugin initialization
-  - `onInitialize()`: Registers systems, tabs, Gemini commands, connects auto-connect servers
+  - `onInitialize()`: Registers systems, tabs, AI commands, connects auto-connect servers
   - `registerServerToStarScript()`: Injects tools into global StarScript namespace
   - `unregisterServerFromStarScript()`: Cleanup on disconnect
 
@@ -141,11 +148,14 @@ MCPToolExecutor.execute()
   - Lifecycle: `connect()`, `disconnect()`, `reconnect()`
   - Rate limiting: 5-second reconnect cooldown
 
+- **`AIConfig.java`**: Wraps `GeminiConfig` + `OllamaConfig` plus an active-provider selector; backwards-compatible NBT reads the legacy `gemini` tag.
+- **`OllamaConfig.java`**: Host URL, model, context length, keep-alive, timeout, and enable flag.
+
 #### Command Integration (`commands/`)
 - **`CommandUtils.java`**: Shared key=value/JSON parser plus chat output helpers for tool results
 - **`MCPToolCommand.java`**: Dynamic Brigadier command per MCP tool (`.server:tool …`) with help + suggestions
-- **`GeminiCommand.java`**: `.gemini "prompt"` chat command with async execution and per-player cooldown
-- **`GeminiMCPCommand.java`**: `.gemini-mcp "prompt"` with automatic MCP tool discovery and usage reporting
+- **`AICommand.java`**: `.ai "prompt"` chat command with async execution and per-player cooldown
+- **`AIMCPCommand.java`**: `.ai-mcp "prompt"` with automatic MCP tool discovery and usage reporting
 
 `MCPServers` mirrors StarScript registration by adding/removing `MCPToolCommand` instances whenever servers connect or disconnect, refreshing the Brigadier dispatcher to keep the chat tree accurate.
 
@@ -177,6 +187,14 @@ MCPToolExecutor.execute()
 - **`screens/AddMCPServerScreen.java`**: Server creation form
 - **`screens/EditMCPServerScreen.java`**: Server editing form
 - **`screens/MCPToolsScreen.java`**: Tool browser with copy-to-clipboard StarScript snippets
+- **`screens/AISettingsScreen.java`**: AI provider settings — provider switcher, auto-fetched model dropdown, context-length slider, keep-alive, and split "Test Connection" / "Load Model" buttons.
+- **`MaskedTextBoxRenderer.java`**: Secure masked input widget for API keys.
+
+#### AI Providers (`llm/`, `gemini/`, `ollama/`)
+- **`llm/LLMProvider.java`** + **`llm/LLMProviderManager.java`**: Pluggable provider abstraction; the manager routes `chat()` / `chatWithMCP()` / `testConnection()` to the active provider and invalidates clients on config change.
+- **`llm/GeminiProvider.java`** / **`llm/OllamaProvider.java`**: Provider implementations backing the `gemini/` and `ollama/` packages.
+- **`gemini/`**: `GeminiClientManager` (client lifecycle + connection testing), `GeminiExecutor` (prompts + manual MCP function-calling loop), `MCPToGeminiBridge` (schema conversion + call routing).
+- **`ollama/`**: `OllamaClientManager` (host/model handling + model listing), `OllamaExecutor` (streaming-enabled prompt + MCP function-calling loop), `MCPToOllamaBridge` (schema conversion + call routing).
 
 ### Key Patterns
 
@@ -244,13 +262,20 @@ This works in:
 - Discord Rich Presence
 - Custom Meteor modules
 
-## Gemini AI Integration Details
+## AI Integration Details
+
+The AI layer is a **pluggable provider system** (`llm/` package): an `LLMProviderManager`
+singleton routes all requests to the currently active provider (`GeminiProvider` or
+`OllamaProvider`). The Gemini flow below is the canonical example; Ollama mirrors it via
+the parallel `ollama/` classes.
 
 ### Execution Flow
 ```
-StarScript call ({gemini()} or {gemini_mcp()})
+StarScript call ({ai()} or {ai_mcp()})
     ↓
-GeminiStarScriptIntegration (argument extraction, server discovery)
+AIStarScriptIntegration (argument extraction, server discovery)
+    ↓
+LLMProviderManager → active provider
     ↓
 GeminiExecutor (simple prompt or MCP-enhanced loop)
     ↓
@@ -262,25 +287,26 @@ MCPToGeminiBridge converts tool schemas + routes function calls
     ↓
 MCPServerConnection.callTool()
     ↓
-CallToolResult mapped back to Gemini → final response surfaced via StarScript
+CallToolResult mapped back to provider → final response surfaced via StarScript
 ```
 
 ### Key Components
-1. **GeminiClientManager** – lazy client creation, invalidation on config changes, connection testing helper.
-2. **GeminiExecutor** – synchronous prompt handling plus manual function-calling loop for MCP tools.
-3. **MCPToGeminiBridge** – JSON Schema conversion and server/tool routing metadata.
-4. **GeminiStarScriptIntegration** – exposes `{gemini()}` and `{gemini_mcp()}` functions to the global StarScript instance.
-5. **GeminiSettingsScreen** – GUI for API key, model selection, token/temperature limits, and enable toggle.
+1. **LLMProviderManager** – singleton that routes `chat()` / `chatWithMCP()` / `testConnection()` to the active provider and invalidates clients on config change.
+2. **GeminiClientManager** – lazy client creation, invalidation on config changes, connection testing helper.
+3. **GeminiExecutor** / **OllamaExecutor** – synchronous prompt handling plus manual function-calling loop for MCP tools (Ollama streams by default).
+4. **MCPToGeminiBridge** / **MCPToOllamaBridge** – JSON Schema conversion and server/tool routing metadata.
+5. **AIStarScriptIntegration** – exposes `{ai()}` and `{ai_mcp()}` functions to the global StarScript instance.
+6. **AISettingsScreen** – GUI for provider switching, API-key/model selection, context length, keep-alive, and enable toggle (with "Test Connection" / "Load Model" buttons).
 
 ### Configuration & Dependencies
-- `build.gradle.kts` shades `com.google.genai:google-genai:1.23.0` into the released jar.
-- `MCPServers` stores `GeminiConfig` alongside server configs; persisted via NBT.
-- Settings screen masks API key input, supports live "Test Connection" using GeminiExecutor.
+- `build.gradle.kts` shades `com.google.genai:google-genai:1.23.0` and `io.github.ollama4j:ollama4j:1.1.4` into the released jar.
+- `MCPServers` stores an `AIConfig` (wrapping `GeminiConfig` + `OllamaConfig` + active-provider selector); persisted via NBT with backwards-compatible legacy `gemini` tag.
+- `MaskedTextBoxRenderer` provides secure masked API-key input.
 
 ### Behaviour Highlights
 - Manual function calling provides complete control over tool execution order and error handling.
-- Gemini automatically sees every connected MCP server when `{gemini_mcp()}` is used.
-- Tool results are normalized to simple JSON payloads before being fed back into Gemini.
+- The active provider automatically sees every connected MCP server when `{ai_mcp()}` is used.
+- Tool results are normalized to simple JSON payloads before being fed back into the provider.
 - All responses (success or failure) return string values so they can render safely in StarScript contexts.
 
 ## Reference Documentation
@@ -437,7 +463,7 @@ public class MyClass {
 
 - **Author**: GhostTypes (Cope)
 - **License**: See `LICENSE` file
-- **Version**: 0.1.0 (see `gradle.properties`)
+- **Version**: 0.3.0 (see `gradle.properties`)
 - **Mod ID**: `meteor-mcp`
 - **Fabric Mod Entry Point**: `com.cope.meteormcp.MeteorMCPAddon` (via `fabric.mod.json`)
 - **Meteor Color**: `100,150,255` (custom color in Meteor GUI)
@@ -450,9 +476,13 @@ public class MyClass {
 - Gradle wrapper: `.\gradlew` (Windows) or `./gradlew` (Unix)
 
 ### Dependency Management
-- **Local JARs**: Meteor Client is in `libs/` directory (via `flatDir` repository)
-- **Shading**: MCP SDK and dependencies are included in final jar (`include(it)`)
+- **modInclude pattern**: Dependencies are bundled via `modInclude` configuration in `build.gradle.kts`
+- **Shading**: MCP SDK, Gemini SDK, Ollama, and dependencies are included in final jar via `modInclude`
 - **StarScript**: External dependency (not bundled in Meteor Client)
+
+### CI
+- **GitHub Actions**: Unified `release.yml` workflow with timestamped dev tags
+- **JDK 25**: Used in CI pipeline
 
 ### Reference Codebase
 The `gemini-discord-bot` codebase at `C:\Users\Cope\Documents\GitHub\gemini-discord-bot` provides:
@@ -470,8 +500,9 @@ The `gemini-discord-bot` codebase at `C:\Users\Cope\Documents\GitHub\gemini-disc
 - Check Meteor Client source code for System/GUI patterns
 - Reference addon template for boilerplate structure
 
-### Gemini Integration
+### AI Integration
 - See `ai_docs/gemini/function-calling-guide.md` for conceptual patterns
+- See `ai_docs/ollama/` for Ollama / ollama4j integration references
 - Google GenAI Java SDK README: https://github.com/googleapis/java-genai/blob/main/README.md
 - Gemini API docs: https://ai.google.dev/gemini-api/docs/function-calling
 

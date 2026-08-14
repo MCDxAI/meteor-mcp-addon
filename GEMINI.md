@@ -121,6 +121,14 @@ cd meteor-mcp-addon
 *   **New Config Options:** Update `GeminiConfig` and `GeminiSettingsScreen`.
 *   **New Logic:** Modify `GeminiExecutor` for changes to the AI loop.
 
+### 5.4 Tech Stack
+*   **JDK 25** · **Minecraft 26.1.2** · **Fabric Loader 0.19.2** · **Fabric Loom 1.16**
+*   **Meteor Client 26.1.2-SNAPSHOT** · **Gradle 9.4.1**
+*   **MCP SDK 1.1.1** · **StarScript 0.2.5**
+*   **Gemini AI** (`google-genai:1.23.0`) · **Ollama** (`ollama4j:1.1.4`)
+*   Mod version: **0.3.0**
+*   CI: `release.yml` with timestamped dev tags, JDK 25
+
 ### 5.3 Common Issues
 *   **"Server Disconnected":** Check the console logs. The MCP server process might have crashed or failed to start (e.g., missing `node` in PATH).
 *   **Gemini 400 Errors:** Usually invalid tool schemas. `MCPToGeminiBridge` attempts to sanitize schemas, but complex JSON types might need adjustment.

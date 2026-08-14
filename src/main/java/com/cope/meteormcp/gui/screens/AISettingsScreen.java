@@ -123,7 +123,7 @@ public class AISettingsScreen extends WindowScreen {
         saveButton.action = this::save;
 
         WButton cancelButton = buttons.add(theme.button("Cancel")).expandX().widget();
-        cancelButton.action = () -> mc.setScreen(parent);
+        cancelButton.action = () -> mc.gui.setScreen(parent);
 
         // Auto-fetch Ollama models on first view
         if (selectedProvider == ProviderType.OLLAMA && !ollamaModelsFetched) {
@@ -356,7 +356,7 @@ public class AISettingsScreen extends WindowScreen {
         if (parent != null) {
             parent.reload();
         }
-        mc.setScreen(parent);
+        mc.gui.setScreen(parent);
     }
 
     // ---- Status display ----

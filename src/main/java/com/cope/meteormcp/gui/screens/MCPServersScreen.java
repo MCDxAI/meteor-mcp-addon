@@ -31,7 +31,7 @@ public class MCPServersScreen extends WindowTabScreen {
     public void initWidgets() {
         // Add server button
         WButton addButton = add(theme.button("Add Server")).expandX().widget();
-        addButton.action = () -> mc.setScreen(new AddMCPServerScreen(theme, this));
+        addButton.action = () -> mc.gui.setScreen(new AddMCPServerScreen(theme, this));
 
         add(theme.horizontalSeparator()).expandX();
 
@@ -41,7 +41,7 @@ public class MCPServersScreen extends WindowTabScreen {
         WHorizontalList aiRow = add(theme.horizontalList()).expandX().widget();
 
         WButton aiSettingsBtn = aiRow.add(theme.button("Configure AI")).expandX().widget();
-        aiSettingsBtn.action = () -> mc.setScreen(new AISettingsScreen(theme, this));
+        aiSettingsBtn.action = () -> mc.gui.setScreen(new AISettingsScreen(theme, this));
 
         AIConfig aiConfig = MCPServers.get().getAIConfig();
         String providerName = aiConfig.getActiveProvider().name();
@@ -93,13 +93,13 @@ public class MCPServersScreen extends WindowTabScreen {
             toolsBtn.action = () -> {
                 MCPServerConnection connection = mcpServers.getConnection(config.getName());
                 if (connection != null) {
-                    mc.setScreen(new MCPToolsScreen(theme, this, connection));
+                    mc.gui.setScreen(new MCPToolsScreen(theme, this, connection));
                 }
             };
 
             // Edit button
             WButton editBtn = actions.add(theme.button("Edit")).widget();
-            editBtn.action = () -> mc.setScreen(new EditMCPServerScreen(theme, this, config));
+            editBtn.action = () -> mc.gui.setScreen(new EditMCPServerScreen(theme, this, config));
 
             // Remove button
             WButton removeBtn = actions.add(theme.button("Remove")).widget();

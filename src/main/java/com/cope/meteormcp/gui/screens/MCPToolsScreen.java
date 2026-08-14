@@ -41,7 +41,7 @@ public class MCPToolsScreen extends WindowScreen {
 
         // Back button
         WButton backBtn = add(theme.button("Back")).expandX().widget();
-        backBtn.action = () -> mc.setScreen(parent);
+        backBtn.action = () -> mc.gui.setScreen(parent);
 
         add(theme.horizontalSeparator()).expandX();
 
