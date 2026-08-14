@@ -42,10 +42,10 @@ This is a **Meteor Client addon** that bridges the **Model Context Protocol (MCP
 
 ### Core Dependencies
 - **JDK 25**: Target and source compatibility
-- **Minecraft 26.1.2** with **Fabric Loader 0.19.2**
-- **Fabric Loom 1.16** (Gradle plugin)
-- **Meteor Client 26.1.2-SNAPSHOT**: Via Maven repository
-- **Gradle 9.4.1** with Kotlin DSL (`build.gradle.kts`)
+- **Minecraft 26.2** with **Fabric Loader 0.19.3**
+- **Fabric Loom 1.17-SNAPSHOT** (Gradle plugin)
+- **Meteor Client 26.2-SNAPSHOT**: Via Maven repository
+- **Gradle 9.6.1** with Kotlin DSL (`build.gradle.kts`)
 - Uses `modInclude` configuration pattern for dependency bundling
 
 ### MCP Integration

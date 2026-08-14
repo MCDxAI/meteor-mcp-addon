@@ -122,11 +122,11 @@ cd meteor-mcp-addon
 *   **New Logic:** Modify `GeminiExecutor` for changes to the AI loop.
 
 ### 5.4 Tech Stack
-*   **JDK 25** · **Minecraft 26.1.2** · **Fabric Loader 0.19.2** · **Fabric Loom 1.16**
-*   **Meteor Client 26.1.2-SNAPSHOT** · **Gradle 9.4.1**
+*   **JDK 25** · **Minecraft 26.2** · **Fabric Loader 0.19.3** · **Fabric Loom 1.17-SNAPSHOT**
+*   **Meteor Client 26.2-SNAPSHOT** · **Gradle 9.6.1**
 *   **MCP SDK 1.1.1** · **StarScript 0.2.5**
 *   **Gemini AI** (`google-genai:1.23.0`) · **Ollama** (`ollama4j:1.1.4`)
-*   Mod version: **0.3.0**
+*   Mod version: **0.4.0**
 *   CI: `release.yml` with timestamped dev tags, JDK 25
 
 ### 5.3 Common Issues
